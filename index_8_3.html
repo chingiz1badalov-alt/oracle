@@ -1,0 +1,2844 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ALMANAC">
+<meta name="theme-color" content="#010407">
+<title>ALMANAC — AI Каппер</title>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#010407;--bg2:#050a10;--bg3:#080f18;--card:#0b1422;--b1:#0f1d2e;--b2:#182c44;
+--gold:#f0a500;--gold2:#ffc452;--gg:rgba(240,165,0,.07);
+--green:#00e676;--greeng:rgba(0,230,118,.07);
+--red:#ff1744;--redg:rgba(255,23,68,.07);
+--blue:#29b6f6;--blueg:rgba(41,182,246,.06);
+--purple:#ce93d8;--t1:#dce8f8;--t2:#5a7898;--t3:#253a52;--r:12px;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--t1);font-family:'Oxanium',sans-serif;display:flex;flex-direction:column;max-width:430px;margin:0 auto;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 35% at 50% -5%,rgba(240,165,0,.04) 0%,transparent 70%);}
+
+/* HEADER */
+.hdr{flex-shrink:0;background:rgba(1,4,7,.98);border-bottom:1px solid var(--b1);z-index:20;padding-top:env(safe-area-inset-top);}
+.hdr-row{display:flex;align-items:center;padding:10px 14px 8px;gap:10px;}
+.logo{font-size:22px;font-weight:800;letter-spacing:.15em;color:var(--gold);text-shadow:0 0 20px rgba(240,165,0,.35);line-height:1;}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);letter-spacing:.08em;margin-top:1px;}
+.hdr-right{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.pill{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;border:1px solid var(--b2);font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);transition:all .3s;}
+.pill.on{border-color:rgba(0,230,118,.35);background:var(--greeng);color:var(--green);}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.pdot.p{animation:dp 1.4s infinite;}
+@keyframes dp{0%,100%{opacity:1;}50%{opacity:.15;}}
+.clk{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);}
+.sbar{height:2px;background:var(--b1);overflow:hidden;}
+.sfill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--green));transition:width 1s linear;}
+.src-strip{display:flex;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--b1);background:rgba(1,4,7,.95);padding:0 6px;}
+.src-strip::-webkit-scrollbar{display:none;}
+.sch{flex-shrink:0;padding:5px 8px;font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--t3);letter-spacing:.05em;border:none;background:transparent;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;}
+.sch.ok{color:var(--green);border-bottom-color:rgba(0,230,118,.4);}
+.sch.err{color:var(--red);}
+.sch.load{color:var(--gold);animation:dp .9s infinite;}
+
+/* NAV */
+.nav{flex-shrink:0;display:flex;background:var(--bg2);border-top:1px solid var(--b1);padding-bottom:env(safe-area-inset-bottom);z-index:20;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 3px 5px;gap:2px;background:transparent;border:none;color:var(--t3);font-family:'Oxanium',sans-serif;font-size:9px;cursor:pointer;transition:color .15s;-webkit-appearance:none;position:relative;}
+.nb .ni{font-size:18px;line-height:1;}
+.nb.act{color:var(--gold);}
+.nbadge{position:absolute;top:3px;right:calc(50% - 18px);background:var(--red);color:#fff;font-size:7px;width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+
+/* PAGES */
+.pages{flex:1;overflow:hidden;position:relative;z-index:1;}
+.pg{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;}
+.pg.act{display:block;}
+::-webkit-scrollbar{width:0;}
+
+/* SIGNAL CARD */
+.sc{margin:10px 10px 0;background:var(--card);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;animation:fup .35s ease;}
+.sc:last-child{margin-bottom:10px;}
+@keyframes fup{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sc.fresh{border-color:rgba(240,165,0,.5);box-shadow:0 0 24px rgba(240,165,0,.08);}
+.sc.expr{border-color:rgba(41,182,246,.4);}
+.sc-head{display:flex;align-items:center;gap:6px;padding:8px 12px 7px;border-bottom:1px solid var(--b1);}
+.sp-tag{padding:3px 8px;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:8px;background:var(--b2);color:var(--t2);}
+.lg-tag{font-size:10px;color:var(--t3);font-family:'Share Tech Mono',monospace;}
+.tm-tag{margin-left:auto;padding:3px 8px;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:8px;}
+.tt-s{background:rgba(240,165,0,.12);color:var(--gold);}
+.tt-n{background:var(--redg);color:var(--red);animation:dp .7s infinite;}
+.tt-o{background:var(--greeng);color:var(--green);}
+.expr-hdr{background:linear-gradient(135deg,rgba(41,182,246,.1),transparent);border-bottom:1px solid rgba(41,182,246,.15);padding:7px 12px;display:flex;align-items:center;gap:8px;}
+.expr-title{font-size:13px;font-weight:700;color:var(--blue);}
+.expr-odds{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--gold);margin-left:auto;}
+.legs-box{background:var(--bg3);border:1px solid var(--b1);border-radius:7px;padding:8px 11px;margin-bottom:8px;}
+.leg{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid var(--b1);font-size:11px;}
+.leg:last-child{border-bottom:none;}
+.leg-m{flex:1;color:var(--t2);}
+.leg-b{font-weight:600;color:var(--t1);}
+.leg-o{font-family:'Share Tech Mono',monospace;color:var(--blue);flex-shrink:0;}
+.sc-body{padding:11px 12px 8px;}
+.sc-match{font-size:20px;font-weight:700;color:var(--t1);line-height:1.1;margin-bottom:4px;}
+.sc-time{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-bottom:8px;}
+.bet-box{display:flex;align-items:center;gap:8px;background:var(--gg);border:1px solid rgba(240,165,0,.18);border-radius:8px;padding:9px 12px;margin-bottom:8px;}
+.bet-txt{flex:1;}
+.bet-name{font-size:13px;font-weight:600;color:var(--t1);line-height:1.3;}
+.bet-info{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);margin-top:3px;}
+.bet-odds{font-size:26px;font-weight:800;color:var(--gold);line-height:1;text-shadow:0 0 14px rgba(240,165,0,.25);}
+.conf-row{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.conf-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);white-space:nowrap;}
+.conf-track{flex:1;height:4px;background:var(--b1);border-radius:2px;overflow:hidden;}
+.cbar{height:100%;border-radius:2px;}
+.cb-h{background:linear-gradient(90deg,var(--green),#69f0ae);}
+.cb-m{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.cb-l{background:var(--red);}
+.conf-n{font-size:17px;font-weight:700;}
+.cn-h{color:var(--green);}
+.cn-m{color:var(--gold);}
+.cn-l{color:var(--red);}
+.val-row{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.vl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);}
+.vtrack{flex:1;height:3px;background:var(--b1);border-radius:2px;overflow:hidden;}
+.vfill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--purple));}
+.vn{font-size:13px;font-weight:700;color:var(--blue);}
+.src-used{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px;}
+.su{padding:2px 7px;border-radius:3px;background:var(--b1);color:var(--t3);font-family:'Share Tech Mono',monospace;font-size:7px;border:1px solid var(--b2);}
+.reasons{margin-bottom:7px;}
+.reason{display:flex;gap:6px;align-items:flex-start;padding:4px 0;border-bottom:1px solid rgba(15,29,46,.8);font-size:11px;color:var(--t2);line-height:1.4;}
+.reason:last-child{border-bottom:none;}
+.rdot{color:var(--gold);font-size:7px;margin-top:4px;flex-shrink:0;}
+.kf{background:linear-gradient(135deg,var(--gg),transparent);border:1px solid rgba(240,165,0,.14);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--gold2);font-weight:600;margin-bottom:7px;line-height:1.4;}
+.wx-box{display:flex;align-items:center;gap:8px;background:var(--blueg);border:1px solid rgba(41,182,246,.1);border-radius:7px;padding:6px 10px;margin-bottom:7px;}
+.wx-ico{font-size:20px;line-height:1;}
+.wx-info{flex:1;}
+.wx-city{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--blue);letter-spacing:.05em;}
+.wx-desc{font-size:11px;color:var(--t2);}
+.sc-foot{display:flex;align-items:center;gap:6px;padding:7px 12px;border-top:1px solid var(--b1);}
+.risk-tag{padding:4px 9px;border-radius:5px;font-family:'Share Tech Mono',monospace;font-size:8px;}
+.rt-l{background:var(--greeng);color:var(--green);border:1px solid rgba(0,230,118,.2);}
+.rt-m{background:var(--gg);color:var(--gold);border:1px solid rgba(240,165,0,.2);}
+.rt-h{background:var(--redg);color:var(--red);border:1px solid rgba(255,23,68,.2);}
+.copy-btn{margin-left:auto;padding:6px 14px;border-radius:6px;background:var(--b1);border:1px solid var(--b2);color:var(--t2);font-family:'Oxanium',sans-serif;font-size:11px;font-weight:600;cursor:pointer;-webkit-appearance:none;}
+.copy-btn:active{transform:scale(.96);}
+.disc{padding:4px 12px 10px;font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);line-height:1.5;}
+
+/* ANALYSIS PROGRESS */
+.anl{margin:10px;background:var(--card);border:1px solid rgba(240,165,0,.2);border-radius:var(--r);padding:14px;}
+.anl-title{font-size:13px;font-weight:700;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.spin{width:13px;height:13px;border:2px solid var(--b2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.step{display:flex;align-items:center;gap:7px;padding:3px 0;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);transition:color .3s;}
+.step.done{color:var(--green);}
+.step.act{color:var(--gold);}
+.step-ic{width:11px;text-align:center;flex-shrink:0;}
+
+/* MATCHES */
+.mc{margin:8px 10px 0;background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:11px 12px;display:flex;align-items:center;gap:9px;}
+.mc:last-child{margin-bottom:8px;}
+.mc.alert{border-color:rgba(240,165,0,.3);}
+.mc.done{opacity:.3;}
+.mc-i{flex:1;}
+.mc-t{font-size:16px;font-weight:700;color:var(--t1);line-height:1.1;}
+.mc-m{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);margin-top:3px;}
+.mc-o{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;}
+.op{padding:3px 8px;border-radius:4px;background:var(--b1);border:1px solid var(--b2);font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t2);}
+.mc-cd{text-align:right;flex-shrink:0;}
+.cdv{padding:3px 7px;border-radius:4px;font-family:'Share Tech Mono',monospace;font-size:9px;display:inline-block;}
+.cv-f{background:var(--b1);color:var(--t3);}
+.cv-s{background:rgba(240,165,0,.1);color:var(--gold);}
+.cv-n{background:var(--redg);color:var(--red);}
+.cv-g{background:var(--greeng);color:var(--green);}
+.del{background:none;border:none;color:var(--t3);font-size:14px;padding:4px;cursor:pointer;}
+
+/* STATS */
+.sgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px;}
+.sbox{background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:12px 10px;text-align:center;}
+.sn{font-size:28px;font-weight:800;color:var(--gold);line-height:1;}
+.sl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);margin-top:3px;letter-spacing:.06em;}
+.wr-card{margin:0 10px 8px;background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:13px 14px;}
+.wr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.wr-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);letter-spacing:.1em;}
+.wr-pct{font-size:28px;font-weight:800;line-height:1;}
+.wr-bar{height:6px;background:var(--b1);border-radius:3px;overflow:hidden;margin-bottom:10px;}
+.wr-fill{height:100%;border-radius:3px;transition:width .8s ease;}
+.wr-meta{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);}
+.wr-v{font-weight:700;}
+.rh{margin:0 10px 6px;background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:10px 12px;}
+.rh.win{border-left:3px solid var(--green);}
+.rh.loss{border-left:3px solid var(--red);}
+.rh.pending{border-left:3px solid var(--gold);}
+.rh-match{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:3px;}
+.rh-bet{font-size:11px;color:var(--t2);margin-bottom:5px;}
+.rh-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.rh-odds{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--gold);}
+.rh-conf{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);}
+.rh-res{font-size:11px;font-weight:700;margin-left:auto;}
+.rr-w{color:var(--green);}
+.rr-l{color:var(--red);}
+.rr-p{color:var(--gold);}
+.rh-meta{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);margin-top:5px;}
+.rh-btns{display:flex;gap:5px;margin-top:7px;}
+.rh-btn{flex:1;padding:7px;border-radius:6px;border:1px solid var(--b2);background:var(--b1);font-family:'Oxanium',sans-serif;font-size:11px;font-weight:600;cursor:pointer;-webkit-appearance:none;}
+.rh-btn.w{border-color:rgba(0,230,118,.3);color:var(--green);}
+.rh-btn.l{border-color:rgba(255,23,68,.3);color:var(--red);}
+.rh-btn:active{transform:scale(.97);}
+
+/* INTEL */
+.icard{margin:0 10px 8px;background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:11px 12px;}
+.i-title{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);letter-spacing:.1em;margin-bottom:8px;}
+.i-item{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(15,29,46,.6);font-size:11px;color:var(--t2);}
+.i-item:last-child{border-bottom:none;}
+.i-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.d-ok{background:var(--green);}
+.d-err{background:var(--red);}
+.d-idle{background:var(--t3);}
+.d-load{background:var(--gold);animation:dp .8s infinite;}
+.i-name{flex:1;font-family:'Share Tech Mono',monospace;font-size:9px;}
+.i-stat{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);}
+.ni{padding:9px 12px;border-bottom:1px solid var(--b1);}
+.n-src{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--blue);letter-spacing:.06em;margin-bottom:2px;}
+.n-title{font-size:11px;color:var(--t2);line-height:1.4;}
+.n-time{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--t3);margin-top:2px;}
+.n-imp{display:inline-block;padding:1px 5px;border-radius:2px;font-size:7px;font-family:'Share Tech Mono',monospace;margin-left:4px;}
+.nih{background:var(--redg);color:var(--red);}
+.nim{background:var(--gg);color:var(--gold);}
+.nil{background:var(--b1);color:var(--t3);}
+.ll{padding:4px 12px;border-bottom:1px solid rgba(15,29,46,.5);font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3);line-height:1.5;}
+.l-ok{color:var(--green);}
+.l-warn{color:var(--gold);}
+.l-sig{color:var(--gold2);}
+.l-err{color:var(--red);}
+.l-src{color:var(--blue);}
+
+/* SETTINGS */
+.sw{padding:10px;}
+.s-sec{margin-bottom:12px;}
+.s-st{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.12em;color:var(--t3);padding-bottom:5px;border-bottom:1px solid var(--b1);margin-bottom:9px;}
+.sf{margin-bottom:9px;}
+.sl2{font-size:11px;color:var(--t2);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;}
+.si{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:10px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t1);outline:none;-webkit-appearance:none;transition:border-color .2s;}
+.si:focus{border-color:rgba(240,165,0,.4);}
+.si::placeholder{color:var(--t3);}
+select.si{cursor:pointer;}
+.shint{font-size:9px;color:var(--t3);margin-top:3px;line-height:1.6;}
+.sv{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--gold);}
+.sr{width:100%;-webkit-appearance:none;height:3px;background:var(--b2);border-radius:2px;outline:none;margin-top:6px;}
+.sr::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 8px rgba(240,165,0,.3);}
+.btn-go{width:100%;padding:13px;background:linear-gradient(135deg,var(--green),#00c853);border:none;border-radius:10px;color:#010407;font-family:'Oxanium',sans-serif;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:.08em;-webkit-appearance:none;transition:all .2s;margin-bottom:8px;}
+.btn-go.stop{background:linear-gradient(135deg,var(--red),#b71c1c);color:#fff;}
+.btn-go:active{transform:scale(.98);}
+.btn-notif{width:100%;padding:11px;background:var(--blueg);border:1px solid rgba(41,182,246,.3);border-radius:10px;color:var(--blue);font-family:'Oxanium',sans-serif;font-size:13px;font-weight:700;cursor:pointer;-webkit-appearance:none;margin-bottom:8px;}
+.btn-save{width:100%;padding:12px;background:var(--b1);border:1px solid var(--b2);border-radius:10px;color:var(--t1);font-family:'Oxanium',sans-serif;font-size:14px;font-weight:700;cursor:pointer;-webkit-appearance:none;}
+.install-box{background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:12px;margin-bottom:10px;}
+.install-box p{font-size:12px;color:var(--t2);line-height:2;}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.add-form{margin:10px;background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:11px;}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:55vh;gap:10px;padding:24px;text-align:center;}
+.ei{font-size:46px;opacity:.1;}
+.et{font-size:19px;font-weight:700;color:var(--t2);letter-spacing:.06em;}
+.es{font-size:12px;color:var(--t3);line-height:1.8;}
+.ea{margin-top:6px;padding:11px 22px;background:var(--gg);border:1px solid rgba(240,165,0,.28);border-radius:10px;color:var(--gold);font-family:'Oxanium',sans-serif;font-size:13px;font-weight:700;cursor:pointer;-webkit-appearance:none;}
+.toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--card);border:1px solid var(--b2);border-radius:10px;padding:9px 17px;font-size:12px;font-weight:600;color:var(--t1);z-index:999;opacity:0;transition:all .3s;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.6);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-row">
+    <div>
+      <div class="logo">📚 ALMANAC</div>
+      <div class="logo-sub">AI SPORTS ANALYST · НАЗАД В БУДУЩЕЕ 🔮</div>
+    </div>
+    <div class="hdr-right">
+      <div class="pill" id="agPill"><span class="pdot" id="agDot"></span><span id="agTxt">СТОП</span></div>
+      <div class="clk" id="clk">00:00 МСК</div>
+    </div>
+  </div>
+  <div class="sbar"><div class="sfill" id="sfill"></div></div>
+  <div class="src-strip">
+    <span class="sch" id="cs-odds">⬡ BETBOOM ODDS</span>
+    <span class="sch" id="cs-fd">⬡ FOOTBALL-DATA</span>
+    <span class="sch" id="cs-sdb">⬡ SPORTSDB</span>
+    <span class="sch" id="cs-oliga">⬡ OPENLIGADB</span>
+    <span class="sch" id="cs-espn">⬡ ESPN API</span>
+    <span class="sch" id="cs-apisp">⬡ SDB DAY</span>
+    <span class="sch" id="cs-reddit">⬡ REDDIT</span>
+    <span class="sch" id="cs-rss">⬡ SPORTS.RU/РИА</span>
+    <span class="sch" id="cs-wttr">⬡ ПОГОДА</span>
+    <span class="sch" id="cs-groq">⬡ GROQ AI</span>
+  </div>
+</div>
+
+<!-- PAGES -->
+<div class="pages">
+  <!-- SIGNALS -->
+  <div class="pg act" id="pg-signals">
+    <div class="empty" id="emptyEl">
+      <div class="ei">📚</div>
+      <div class="et">ALMANAC ЖДЁТ</div>
+      <div class="es">
+        1️⃣ Вставь <strong style="color:var(--gold)">Groq API Key</strong> в Настройках<br>
+        2️⃣ Нажми <strong style="color:var(--green)">ЗАПУСТИТЬ</strong><br><br>
+        Агент сам найдёт матчи BetBoom<br>
+        и даст сигнал за 30 минут до игры
+      </div>
+      <button class="ea" onclick="nav('settings')">⚙ НАСТРОЙКИ</button>
+    </div>
+    <div id="sigFeed"></div>
+  </div>
+
+  <!-- MATCHES -->
+  <div class="pg" id="pg-matches">
+    <div class="add-form">
+      <div class="i-title">+ ДОБАВИТЬ МАТЧ ВРУЧНУЮ</div>
+      <div class="f2" style="margin-bottom:6px;">
+        <input class="si" id="ft1" placeholder="Хозяева">
+        <input class="si" id="ft2" placeholder="Гости">
+      </div>
+      <div class="f2" style="margin-bottom:6px;">
+        <input class="si" id="fleg" placeholder="Лига">
+        <select class="si" id="fspt">
+          <option>Футбол</option><option>Хоккей</option><option>Теннис</option>
+          <option>Баскетбол</option><option>Киберспорт</option><option>MMA</option>
+        </select>
+      </div>
+      <div class="f2" style="margin-bottom:6px;">
+        <input class="si" id="fdt" type="datetime-local">
+        <input class="si" id="fstd" placeholder="Стадион/Город">
+      </div>
+      <div class="f2" style="margin-bottom:6px;">
+        <input class="si" id="fo1" placeholder="Кэф П1" type="number" step="0.01">
+        <input class="si" id="fo2" placeholder="Кэф П2" type="number" step="0.01">
+      </div>
+      <button onclick="addMatch()" style="width:100%;padding:9px;background:var(--b1);border:1px solid var(--b2);border-radius:8px;color:var(--t2);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:600;cursor:pointer;-webkit-appearance:none;">+ ДОБАВИТЬ</button>
+    </div>
+    <div style="padding:0 10px 5px;"><span class="i-title">ОЧЕРЕДЬ (<span id="qcnt">0</span>)</span></div>
+    <div id="mlist"></div>
+  </div>
+
+  <!-- INTEL -->
+  <div class="pg" id="pg-intel">
+    <div class="sgrid">
+      <div class="sbox"><div class="sn" id="sw-win" style="color:var(--green)">0</div><div class="sl">✅ ЗАШЛО</div></div>
+      <div class="sbox"><div class="sn" id="sw-loss" style="color:var(--red)">0</div><div class="sl">❌ НЕ ЗАШЛО</div></div>
+      <div class="sbox"><div class="sn" id="sw-pend" style="color:var(--gold)">0</div><div class="sl">⏳ ОЖИДАЕТ</div></div>
+    </div>
+    <div class="wr-card">
+      <div class="wr-top"><span class="wr-lbl">ВИНРЕЙТ</span><span class="wr-pct" id="sw-wr">—</span></div>
+      <div class="wr-bar"><div class="wr-fill" id="sw-wrf" style="width:0%"></div></div>
+      <div class="wr-meta">
+        <span>ROI: <span class="wr-v" id="sw-roi">—</span></span>
+        <span>AVG КЭФ: <span class="wr-v" id="sw-ao">—</span></span>
+        <span>СКАНОВ: <span class="wr-v" id="sw-sc">0</span></span>
+      </div>
+    </div>
+    <div class="sgrid">
+      <div class="sbox"><div class="sn" id="sw-yield" style="color:var(--gold)">—</div><div class="sl">📊 YIELD</div></div>
+      <div class="sbox"><div class="sn" id="sw-edge" style="color:var(--blue)">—</div><div class="sl">💎 AVG EDGE</div></div>
+      <div class="sbox"><div class="sn" id="sw-streak" style="color:var(--purple)">—</div><div class="sl">🔥 СЕРИЯ</div></div>
+    </div>
+    <div style="padding:4px 10px 6px;"><span class="i-title">ИСТОРИЯ ПРОГНОЗОВ</span></div>
+    <div id="rhFeed"></div>
+    <div style="padding:4px 10px 6px;margin-top:4px;"><span class="i-title">ИСТОЧНИКИ ДАННЫХ</span></div>
+    <div class="icard"><div id="srcList"></div></div>
+    <div style="padding:4px 10px 6px;"><span class="i-title">НОВОСТИ (<span id="ncnt">0</span>)</span></div>
+    <div id="newsFeed"></div>
+    <div style="padding:4px 10px 6px;"><span class="i-title">ЛОГ АГЕНТА</span></div>
+    <div id="logFeed"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="pg" id="pg-settings">
+    <div class="sw">
+      <button class="btn-go" id="startBtn" onclick="toggleAgent()">▶ ЗАПУСТИТЬ ALMANAC</button>
+      <button class="btn-notif" id="notifBtn" onclick="reqPush()">🔔 ВКЛЮЧИТЬ PUSH-УВЕДОМЛЕНИЯ</button>
+
+      <div class="s-sec">
+        <div class="s-st">🤖 GROQ AI — ЕДИНСТВЕННЫЙ КЛЮЧ</div>
+        <div class="sf">
+          <div class="sl2">Groq API Key <span style="color:var(--red);font-size:8px;font-family:'Share Tech Mono',monospace;">ОБЯЗАТЕЛЬНО</span></div>
+          <input class="si" id="groqKey" type="password" placeholder="gsk_...">
+          <div class="shint">→ console.groq.com → API Keys → Create Key<br>✅ Бесплатно · llama-3.3-70b · Без лимитов</div>
+        </div>
+      </div>
+
+      <div class="s-sec">
+        <div class="s-st">💰 THE ODDS API (кэфы BetBoom)</div>
+        <div class="sf">
+          <div class="sl2">API Key <span style="color:var(--t3);font-size:8px;font-family:'Share Tech Mono',monospace;">РЕКОМЕНДУЕТСЯ</span></div>
+          <input class="si" id="oddsKey" type="password" placeholder="349d23...">
+          <div class="shint">→ the-odds-api.com · БЕСПЛАТНО 500 запросов/мес<br>Агент использует ~6/день = 180/мес ✅<br>Даёт реальные кэфы с BetBoom, 1xBet, Fonbet</div>
+        </div>
+      </div>
+
+      <div class="s-sec">
+        <div class="s-st">⚽ FOOTBALL-DATA.ORG (топ-лиги)</div>
+        <div class="sf">
+          <div class="sl2">API Key <span style="color:var(--t3);font-size:8px;font-family:'Share Tech Mono',monospace;">РЕКОМЕНДУЕТСЯ</span></div>
+          <input class="si" id="fdKey" type="password" placeholder="abc123...">
+          <div class="shint">→ football-data.org/client/register · БЕСПЛАТНО ∞<br>Без ключа: только 6 топ-лиг (резерв) · С ключом: 9+ лиг с расписанием<br>АПЛ, Ла Лига, Бундеслига, Серия А, Лига 1, ЛЧ, ЛЕ, Примейра, Эредивизи</div>
+        </div>
+      </div>
+
+      <div class="s-sec">
+        <div class="s-st">⚙️ ПАРАМЕТРЫ</div>
+        <div class="sf">
+          <div class="sl2">Мин. уверенность для сигнала <span class="sv" id="cvl">65%</span></div>
+          <input type="range" class="sr" min="55" max="92" value="65" id="cvr" oninput="document.getElementById('cvl').textContent=this.value+'%'">
+        </div>
+        <div class="sf">
+          <div class="sl2">Сигнал за N до матча <span class="sv" id="pvl">30 мин</span></div>
+          <input type="range" class="sr" min="10" max="360" step="5" value="30" id="pvr" oninput="document.getElementById('pvl').textContent=fmtMin(this.value)">
+          <div class="shint">💡 Рекомендации:<br>• 10-30 мин — финальные кэфы, минимум сюрпризов после публикации составов<br>• 1-2 часа — баланс свежести и времени на анализ<br>• 3-6 часов — early bird, лучшие кэфы до движения линии (sharp money)</div>
+        </div>
+        <div class="sf">
+          <div class="sl2">Стиль анализа</div>
+          <select class="si" id="aiSt">
+            <option value="conservative">🛡 Консервативный — мин. риск, conf≥75%</option>
+            <option value="balanced" selected>⚖️ Сбалансированный — оптимально</option>
+            <option value="aggressive">⚡ Агрессивный — высокие кэфы + экспрессы</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="s-sec">
+        <div class="s-st">💎 БАНКРОЛЛ-МЕНЕДЖМЕНТ</div>
+        <div class="sf">
+          <div class="sl2">Размер банка <span class="sv" id="bankVal">10 000 ₽</span></div>
+          <input class="si" id="bankSize" type="number" placeholder="10000" min="100" oninput="updBank()">
+          <div class="shint">→ Используется для расчёта рекомендуемой суммы ставки.<br>📐 По Kelly Criterion (1/4 fraction) — научно-доказанный метод роста банка</div>
+        </div>
+        <div class="sf">
+          <div class="sl2">Макс. % от банка на ставку <span class="sv" id="mxStakeVal">3%</span></div>
+          <input type="range" class="sr" min="1" max="10" value="3" id="mxStake" oninput="document.getElementById('mxStakeVal').textContent=this.value+'%'">
+          <div class="shint">→ Жёсткий потолок поверх Kelly. Профессионалы держат макс 3-5%</div>
+        </div>
+        <div class="sf">
+          <div class="sl2">Stop-loss дневной <span class="sv" id="slVal">-10%</span></div>
+          <input type="range" class="sr" min="5" max="25" value="10" id="slRange" oninput="document.getElementById('slVal').textContent='-'+this.value+'%'">
+          <div class="shint">→ Если за день просадка >X% от банка — агент остановится автоматически</div>
+        </div>
+      </div>
+
+      <div class="s-sec">
+        <div class="s-st">📱 УСТАНОВКА НА IPHONE</div>
+        <div class="install-box">
+          <p>
+            1️⃣ Открой в <strong style="color:var(--t1)">Safari</strong><br>
+            2️⃣ Нажми <strong style="color:var(--gold)">Поделиться</strong> (□↑ внизу)<br>
+            3️⃣ <strong style="color:var(--gold)">"На экран Домой"</strong> → Добавить<br>
+            4️⃣ Иконка 📚 на рабочем столе!
+          </p>
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveSets()">💾 СОХРАНИТЬ</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nb act" id="nb-signals" onclick="nav('signals')" style="position:relative;">
+    <span class="ni">🎯</span>СИГНАЛЫ
+    <span class="nbadge" id="newBadge" style="display:none">0</span>
+  </button>
+  <button class="nb" id="nb-matches" onclick="nav('matches')"><span class="ni">⚽</span>МАТЧИ</button>
+  <button class="nb" id="nb-intel" onclick="nav('intel')"><span class="ni">📊</span>ДАННЫЕ</button>
+  <button class="nb" id="nb-settings" onclick="nav('settings')"><span class="ni">⚙️</span>НАСТРОЙКИ</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════
+// CONSTANTS & STATE
+// ══════════════════════════════════════════════════
+const EMO = {Футбол:'⚽',Хоккей:'🏒',Теннис:'🎾',Баскетбол:'🏀',Киберспорт:'🎮',MMA:'🥊',Волейбол:'🏐'};
+const L2CITY = {
+  'РПЛ':'Moscow','КХЛ':'Moscow','РФПЛ':'Moscow',
+  'АПЛ':'London','Лига Чемпионов':'London','Лига Европы':'London',
+  'Бундеслига':'Berlin','Серия А':'Rome','Ла Лига':'Madrid',
+  'Лига 1':'Paris','Roland Garros ATP':'Paris','Roland Garros WTA':'Paris',
+  'НХЛ':'Toronto','НБА':'New York','Евролига':'Madrid','UFC/MMA':'Las Vegas',
+};
+const S2CITY = {
+  'Открытие Арена':'Moscow','Газпром Арена':'Saint Petersburg',
+  'ВЭБ Арена':'Moscow','Лужники':'Moscow','Ростов Арена':'Rostov-on-Don',
+};
+
+// All BetBoom sports via The Odds API
+const BETBOOM_SPORTS = [
+  {key:'soccer_russia_premier_league', n:'РПЛ', s:'Футбол'},
+  {key:'soccer_epl', n:'АПЛ', s:'Футбол'},
+  {key:'soccer_uefa_champs_league', n:'Лига Чемпионов', s:'Футбол'},
+  {key:'soccer_uefa_europa_league', n:'Лига Европы', s:'Футбол'},
+  {key:'soccer_germany_bundesliga', n:'Бундеслига', s:'Футбол'},
+  {key:'soccer_italy_serie_a', n:'Серия А', s:'Футбол'},
+  {key:'soccer_spain_la_liga', n:'Ла Лига', s:'Футбол'},
+  {key:'soccer_france_ligue_one', n:'Лига 1', s:'Футбол'},
+  {key:'soccer_portugal_primeira_liga', n:'Примейра', s:'Футбол'},
+  {key:'soccer_netherlands_eredivisie', n:'Эредивизи', s:'Футбол'},
+  {key:'icehockey_khl', n:'КХЛ', s:'Хоккей'},
+  {key:'icehockey_nhl', n:'НХЛ', s:'Хоккей'},
+  {key:'basketball_nba', n:'НБА', s:'Баскетбол'},
+  {key:'basketball_euroleague', n:'Евролига', s:'Баскетбол'},
+  {key:'tennis_atp_french_open', n:'Roland Garros ATP', s:'Теннис'},
+  {key:'tennis_wta_french_open', n:'Roland Garros WTA', s:'Теннис'},
+  {key:'mma_mixed_martial_arts', n:'UFC/MMA', s:'MMA'},
+];
+
+let running = false;
+let scanT = null, barT = null, cdT = null;
+let scanN = 0, newCnt = 0;
+let signals = [], matches = [], sigIds = new Set();
+let allOdds = [], allConfs = [];
+let newsStore = [], dsrc = {};
+let wxCache = {};
+let results = JSON.parse(localStorage.getItem('alm_results') || '[]');
+// Odds API: cache 24h to save requests (6 leagues × 1/day = 6 req/day = 180/month)
+let oddsCache = {data:{}, ts:0, rem:500};
+const ODDS_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+// Persist signaled matches by "team1-team2-date" key to survive page reload
+function getSigKey(m) {
+  return `${m.team1}|${m.team2}|${new Date(m.time).toISOString().slice(0,10)}`;
+}
+function loadSigIds() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('alm_sigids') || '[]');
+    // Only keep keys from last 2 days
+    const cutoff = Date.now() - 2 * 24 * 60 * 60 * 1000;
+    const fresh = saved.filter(item => item.ts > cutoff);
+    localStorage.setItem('alm_sigids', JSON.stringify(fresh));
+    return new Set(fresh.map(item => item.key));
+  } catch(e) { return new Set(); }
+}
+function saveSigKey(key) {
+  try {
+    const saved = JSON.parse(localStorage.getItem('alm_sigids') || '[]');
+    saved.push({key, ts: Date.now()});
+    localStorage.setItem('alm_sigids', JSON.stringify(saved.slice(-200)));
+  } catch(e) {}
+}
+// sigKeys stores "team1|team2|date" strings that already got a signal
+const sigKeys = loadSigIds();
+
+// ══════════════════════════════════════════════════
+// MOSCOW TIME — все время в МСК (UTC+3)
+// ══════════════════════════════════════════════════
+function msk(date, opts) {
+  return date.toLocaleString('ru-RU', {timeZone:'Europe/Moscow', ...opts});
+}
+function mskTime(date) {
+  return date.toLocaleTimeString('ru-RU', {timeZone:'Europe/Moscow', hour:'2-digit', minute:'2-digit'});
+}
+function mskDate(date) {
+  return date.toLocaleDateString('ru-RU', {timeZone:'Europe/Moscow', day:'2-digit', month:'2-digit'});
+}
+function mskFull(date) {
+  return mskDate(date) + ' ' + mskTime(date);
+}
+
+// Clock
+setInterval(() => {
+  document.getElementById('clk').textContent = mskTime(new Date()) + ' МСК';
+}, 1000);
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+function nav(id) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('act'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('act'));
+  document.getElementById('pg-' + id).classList.add('act');
+  document.getElementById('nb-' + id).classList.add('act');
+  if (id === 'signals') { newCnt = 0; document.getElementById('newBadge').style.display = 'none'; }
+}
+
+// ══════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════
+function saveSets() {
+  ['groqKey','oddsKey','fdKey','aiSt'].forEach(k => { const el = document.getElementById(k); if(el) localStorage.setItem('alm_' + k, el.value.trim()); });
+  localStorage.setItem('alm_cvr', document.getElementById('cvr').value);
+  localStorage.setItem('alm_pvr', document.getElementById('pvr').value);
+  showToast('✅ Сохранено!');
+}
+// Форматирует минуты: 30 → "30 мин", 75 → "1ч 15мин", 360 → "6 часов"
+function fmtMin(min) {
+  const m = parseInt(min) || 30;
+  if (m < 60) return m + ' мин';
+  const h = Math.floor(m/60), rest = m%60;
+  if (rest === 0) return h + (h===1?' час':h<5?' часа':' часов');
+  return h + 'ч ' + rest + 'мин';
+}
+function loadSets() {
+  ['groqKey','oddsKey','fdKey','aiSt'].forEach(k => {
+    const v = localStorage.getItem('alm_' + k);
+    const el = document.getElementById(k);
+    if (v && el) el.value = v;
+  });
+  const c = localStorage.getItem('alm_cvr') || '65';
+  let p = localStorage.getItem('alm_pvr') || '30';
+  // Migration: если сохранённое значение из старой версии (10-60), оставляем; новые могут быть до 360
+  p = Math.max(10, Math.min(360, parseInt(p) || 30));
+  document.getElementById('cvr').value = c; document.getElementById('cvl').textContent = c + '%';
+  document.getElementById('pvr').value = p; document.getElementById('pvl').textContent = fmtMin(p);
+}
+const gG = () => document.getElementById('groqKey').value.trim() || localStorage.getItem('alm_groqKey') || '';
+const gO = () => document.getElementById('oddsKey').value.trim() || localStorage.getItem('alm_oddsKey') || '';
+const gFD = () => { const el = document.getElementById('fdKey'); return (el && el.value.trim()) || localStorage.getItem('alm_fdKey') || ''; };
+const gC = () => parseInt(document.getElementById('cvr').value) || 65;
+const gP = () => parseInt(document.getElementById('pvr').value) || 30;
+const gS = () => document.getElementById('aiSt').value || 'balanced';
+
+// ══════════════════════════════════════════════════
+// TOAST & PUSH
+// ══════════════════════════════════════════════════
+function showToast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2300);
+}
+async function reqPush() {
+  if (!('Notification' in window)) { showToast('⚠️ Не поддерживается'); return; }
+  const p = await Notification.requestPermission();
+  if (p === 'granted') {
+    document.getElementById('notifBtn').textContent = '✅ УВЕДОМЛЕНИЯ ВКЛЮЧЕНЫ';
+    document.getElementById('notifBtn').style.color = 'var(--green)';
+    showToast('🔔 Включены!');
+  } else {
+    showToast('Разреши в настройках Safari');
+  }
+}
+function pushN(title, body, tag) {
+  if (Notification.permission !== 'granted') return;
+  try { new Notification(title, {body, tag: tag || 'almanac'}); } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════
+// MATCHES
+// ══════════════════════════════════════════════════
+function addMins(d, m) { return new Date(d.getTime() + m * 60000); }
+
+function addMatch() {
+  const t1 = document.getElementById('ft1').value.trim();
+  const t2 = document.getElementById('ft2').value.trim();
+  if (!t1 || !t2) { showToast('⚠️ Введи команды'); return; }
+  const tv = document.getElementById('fdt').value;
+  const m = {
+    id: Date.now(),
+    team1: t1, team2: t2,
+    league: document.getElementById('fleg').value || 'Лига',
+    sport: document.getElementById('fspt').value,
+    stadium: document.getElementById('fstd').value || '',
+    odds1: parseFloat(document.getElementById('fo1').value) || 2.0,
+    odds2: parseFloat(document.getElementById('fo2').value) || 3.2,
+    time: tv ? new Date(tv) : addMins(new Date(), 33),
+    manual: true,
+  };
+  m._wx = S2CITY[m.stadium] || L2CITY[m.league] || 'Moscow';
+  matches.push(m);
+  ['ft1','ft2','fleg','fo1','fo2','fstd'].forEach(id => document.getElementById(id).value = '');
+  renderMatches();
+  showToast('✅ Добавлен');
+  addLog('info', `Добавлен вручную: ${t1}—${t2}`);
+}
+
+function removeMatch(id) {
+  const m = matches.find(m => m.id === id);
+  if (m) { sigIds.delete(id); sigKeys.delete(getSigKey(m)); }
+  matches = matches.filter(m => m.id !== id);
+  renderMatches();
+}
+
+function getCD(t) {
+  const diff = t - new Date();
+  const m = Math.floor(diff / 60000);
+  if (diff < 0) return {text:'ПРОШЁЛ', cls:'cv-f', mins:-1};
+  if (m < 5) return {text: m + 'м', cls:'cv-n', mins:m};
+  if (m <= gP() + 5) return {text: m + 'м', cls:'cv-s', mins:m};
+  const h = Math.floor(m / 60), mm = m % 60;
+  return {text: h > 0 ? `${h}ч${mm}м` : `${m}м`, cls:'cv-f', mins:m};
+}
+
+function renderMatches() {
+  const list = document.getElementById('mlist');
+  list.innerHTML = '';
+  [...matches].sort((a, b) => a.time - b.time).forEach(m => {
+    const cd = getCD(m.time);
+    const hs = sigKeys.has(getSigKey(m));
+    const div = document.createElement('div');
+    div.className = `mc${(cd.cls === 'cv-s' || cd.cls === 'cv-n') ? ' alert' : ''}${cd.mins < 0 ? ' done' : ''}`;
+    div.innerHTML = `
+      <div class="mc-i">
+        <div class="mc-t">${m.team1} — ${m.team2}</div>
+        <div class="mc-m">${EMO[m.sport]||'🏆'} ${m.sport} · ${m.league}${m.stadium?' · '+m.stadium:''} · ${mskTime(m.time)} МСК</div>
+        <div class="mc-o">
+          <div class="op">П1 ${m.odds1}</div>
+          <div class="op">П2 ${m.odds2}</div>
+          ${m.oddsX ? `<div class="op">X ${m.oddsX}</div>` : ''}
+          ${m.oddsO ? `<div class="op">ТБ${m.totLine||2.5} ${m.oddsO}</div>` : ''}
+          ${m.oddsU ? `<div class="op">ТМ${m.totLine||2.5} ${m.oddsU}</div>` : ''}
+        </div>
+      </div>
+      <div class="mc-cd">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--t3)">${mskDate(m.time)}</div>
+        <div class="cdv ${hs ? 'cv-g' : cd.cls}">${hs ? '✓ СИГНАЛ' : cd.text}</div>
+      </div>
+      <button class="del" onclick="removeMatch(${m.id})">✕</button>`;
+    list.appendChild(div);
+  });
+  document.getElementById('qcnt').textContent = matches.length;
+}
+
+// ══════════════════════════════════════════════════
+// AGENT CONTROL
+// ══════════════════════════════════════════════════
+function toggleAgent() { if (!running) startAgent(); else stopAgent(); }
+
+function startAgent() {
+  if (!gG()) { showToast('⚠️ Введи Groq API Key!'); nav('settings'); return; }
+  running = true;
+  document.getElementById('agPill').classList.add('on');
+  document.getElementById('agDot').classList.add('p');
+  document.getElementById('agTxt').textContent = 'ОНЛАЙН';
+  document.getElementById('startBtn').textContent = '■ ОСТАНОВИТЬ';
+  document.getElementById('startBtn').classList.add('stop');
+  document.getElementById('emptyEl').style.display = 'none';
+  addLog('ok', '📚 ALMANAC запущен!');
+  addLog('ok', `Параметры: conf≥${gC()}% · за ${fmtMin(gP())} · стиль: ${gS()}`);
+  runScan();
+  scanT = setInterval(runScan, 60000);
+  cdT = setInterval(renderMatches, 15000);
+  startBar();
+  if (Notification.permission === 'default') reqPush();
+}
+
+function stopAgent() {
+  running = false;
+  [scanT, cdT, barT].forEach(clearInterval);
+  document.getElementById('agPill').classList.remove('on');
+  document.getElementById('agDot').classList.remove('p');
+  document.getElementById('agTxt').textContent = 'СТОП';
+  document.getElementById('startBtn').textContent = '▶ ЗАПУСТИТЬ ALMANAC';
+  document.getElementById('startBtn').classList.remove('stop');
+  document.getElementById('sfill').style.width = '0%';
+  addLog('warn', '■ Остановлен');
+}
+
+function startBar() {
+  let s = 0;
+  clearInterval(barT);
+  barT = setInterval(() => {
+    s = (s + 1) % 61;
+    document.getElementById('sfill').style.width = (s / 60 * 100) + '%';
+  }, 1000);
+}
+
+// ══════════════════════════════════════════════════
+// MAIN SCAN LOOP
+// ══════════════════════════════════════════════════
+async function runScan() {
+  scanN++;
+  document.getElementById('sw-sc').textContent = scanN;
+  addLog('info', `══ СКАН #${scanN} [${mskTime(new Date())} МСК] ══`);
+
+  // Parallel data collection
+  await Promise.all([
+    srcOddsApi(),    // BetBoom кэфы (1 раз в 24ч)
+    srcFD(),         // football-data.org (БЕСПЛАТНО ∞)
+    srcSDB(),        // TheSportsDB (БЕСПЛАТНО ∞)
+    srcOpenLiga(),   // OpenLigaDB Бундеслига (БЕСПЛАТНО ∞)
+    srcESPN(),       // ESPN API — NFL/NBA/NHL/MLS/UFC/MLB (БЕСПЛАТНО ∞)
+    srcAPISports(),  // SDB Day — все спорты на сегодня (БЕСПЛАТНО ∞)
+    srcReddit(),     // Reddit 10 сабреддитов (БЕСПЛАТНО ∞)
+    srcRSS(),        // Sports.ru, Чемпионат, РИА, СЭ (БЕСПЛАТНО)
+    srcWeather(),    // wttr.in погода (БЕСПЛАТНО ∞)
+  ]);
+
+  renderSrcList();
+  renderNews();
+
+  // Auto-check results of past bets
+  await autoCheckResults();
+
+  // Clean old matches (more than 3h past start)
+  matches = matches.filter(m => (new Date() - m.time) < 3 * 60 * 60 * 1000);
+
+  // Analyze upcoming matches — use sigKeys (persistent) to avoid duplicates
+  // Окно анализа: от 3 минут до старта до настроенного gP() — широкое окно для проф. брокера
+  const upcoming = [...matches]
+    .filter(m => !sigKeys.has(getSigKey(m)))
+    .sort((a, b) => a.time - b.time);
+
+  if (upcoming.length === 0) {
+    const withSig = matches.filter(m => sigKeys.has(getSigKey(m))).length;
+    addLog('warn', `Матчей без сигнала: 0. Всего в очереди: ${matches.length} (${withSig} уже получили сигнал)`);
+  } else {
+    addLog('info', `📋 Очередь анализа: ${upcoming.length} матчей (порог: ${fmtMin(gP())} до старта)`);
+  }
+
+  // Лимит на скан — увеличен до 10 чтобы успевать обрабатывать большой пул матчей при таймере 6ч
+  let analyzedThisScan = 0;
+  const MAX_PER_SCAN = 10;
+
+  for (const m of upcoming) {
+    const cd = getCD(m.time);
+    if (cd.mins < 1) continue; // фильтруем только уже стартовавшие
+    if (cd.mins <= gP()) {
+      if (analyzedThisScan >= MAX_PER_SCAN) {
+        addLog('log', `◌ ${m.team1}—${m.team2}: лимит сканирования (${MAX_PER_SCAN}), будет проанализирован в следующем скане`);
+        continue;
+      }
+      addLog('sig', `⚡ АНАЛИЗ: ${m.team1}—${m.team2} (${cd.mins}м до старта, ${mskTime(m.time)} МСК)`);
+      await analyzeMatch(m);
+      analyzedThisScan++;
+    } else {
+      addLog('log', `◌ ${m.team1}—${m.team2}: через ${cd.text}`);
+    }
+  }
+
+  // Check express opportunities
+  if (gS() !== 'conservative') await checkExpress();
+
+  renderMatches();
+  addLog('ok', `Скан #${scanN} завершён. Проанализировано: ${analyzedThisScan}. Следующий через 60с`);
+}
+
+// ══════════════════════════════════════════════════
+// SOURCE 1: THE ODDS API — BetBoom кэфы
+// 1 раз в 24 часа = 6 запросов/день = 180/месяц ✅
+// ══════════════════════════════════════════════════
+async function srcOddsApi() {
+  const key = gO();
+  if (!key) {
+    setChip('odds', 'idle', 'BETBOOM ODDS');
+    setSrc('odds', 'The Odds API', 'Ключ не задан (опционально)', 'idle');
+    return;
+  }
+  const now = Date.now();
+  // Use cache if fresh (24h)
+  if ((now - oddsCache.ts) < ODDS_TTL && Object.keys(oddsCache.data).length > 0) {
+    const hrs = Math.round((ODDS_TTL - (now - oddsCache.ts)) / 3600000);
+    setChip('odds', 'ok', 'BETBOOM ODDS');
+    setSrc('odds', 'The Odds API (BetBoom)', `кеш · обновление через ${hrs}ч · ${oddsCache.rem} запросов`, 'ok');
+    applyOddsCache();
+    return;
+  }
+  setChip('odds', 'load', 'BETBOOM ODDS');
+  let total = 0;
+  for (const sport of BETBOOM_SPORTS) {
+    try {
+      const url = `https://api.the-odds-api.com/v4/sports/${sport.key}/odds/?apiKey=${key}&regions=eu&markets=h2h,totals&oddsFormat=decimal`;
+      const r = await fetch(url, {signal: AbortSignal.timeout(8000)});
+      const rem = r.headers.get('x-requests-remaining');
+      if (rem) oddsCache.rem = parseInt(rem);
+      if (!r.ok) continue;
+      const data = await r.json();
+      if (!Array.isArray(data)) continue;
+      oddsCache.data[sport.key] = {events: data, meta: sport};
+      total += data.length;
+    } catch(e) {}
+    await new Promise(res => setTimeout(res, 200));
+  }
+  oddsCache.ts = now;
+  applyOddsCache();
+  setChip('odds', 'ok', 'BETBOOM ODDS');
+  setSrc('odds', 'The Odds API (BetBoom кэфы)', `${total} событий · ${oddsCache.rem} запросов осталось`, 'ok');
+  addLog('src', `💰 BetBoom Odds: ${total} событий по ${BETBOOM_SPORTS.length} видам спорта`);
+  if (oddsCache.rem < 30) addLog('warn', `⚠️ Odds API: мало запросов (${oddsCache.rem})! Агент работает и без него.`);
+}
+
+function applyOddsCache() {
+  Object.values(oddsCache.data).forEach(({events, meta}) => {
+    if (!events || !meta) return;
+    events.forEach(ev => {
+      const mt = new Date(ev.commence_time);
+      if (isNaN(mt.getTime())) return;
+      const diffM = (mt - new Date()) / 60000;
+      if (diffM < -30 || diffM > 10080) return; // 7 дней
+      let h1, h2, hX, totO, totU;
+      ev.bookmakers?.slice(0, 3).forEach(bm => {
+        bm.markets?.forEach(mk => {
+          if (mk.key === 'h2h') {
+            mk.outcomes?.forEach(o => {
+              if (o.name === ev.home_team) h1 = o.price;
+              else if (o.name === ev.away_team) h2 = o.price;
+              else if (o.name === 'Draw') hX = o.price;
+            });
+          }
+          if (mk.key === 'totals') {
+            mk.outcomes?.forEach(o => {
+              if (o.name === 'Over') totO = {price: o.price, point: o.point};
+              if (o.name === 'Under') totU = {price: o.price, point: o.point};
+            });
+          }
+        });
+      });
+      // Update existing match — отслеживаем движение линии
+      const ex = matches.find(m => sim(m.team1, ev.home_team) || sim(m.team2, ev.away_team));
+      if (ex) {
+        // Сохраняем историю кэфов (макс 5 точек)
+        if (!ex.oddsHistory) ex.oddsHistory = [];
+        if (h1 && ex.odds1 && Math.abs(ex.odds1 - h1) > 0.01) {
+          ex.oddsHistory.push({t: Date.now(), o1: ex.odds1, o2: ex.odds2});
+          if (ex.oddsHistory.length > 5) ex.oddsHistory.shift();
+          // Расчёт движения: на сколько изменился кэф П1
+          const initial = ex.oddsHistory[0];
+          const drift1 = +((h1 - initial.o1) / initial.o1 * 100).toFixed(2);
+          const drift2 = ex.odds2 && initial.o2 ? +((h2 - initial.o2) / initial.o2 * 100).toFixed(2) : 0;
+          // sharp_in_favor (для П1): кэф П1 упал больше чем 3% = умные деньги ставят на П1
+          if (drift1 < -3) ex.lineMovement = 'home_sharp';
+          else if (drift1 > 3) ex.lineMovement = 'away_sharp';
+          else ex.lineMovement = 'stable';
+          ex.drift = {p1: drift1, p2: drift2};
+        }
+        if (h1) ex.odds1 = +h1.toFixed(2);
+        if (h2) ex.odds2 = +h2.toFixed(2);
+        if (hX) ex.oddsX = +hX.toFixed(2);
+        if (totO) { ex.oddsO = +totO.price.toFixed(2); ex.totLine = totO.point; }
+        if (totU) ex.oddsU = +totU.price.toFixed(2);
+      } else if (h1 && h2) {
+        // Add new match with real BetBoom odds
+        const m = {
+          id: Date.now() + Math.random(),
+          team1: ev.home_team, team2: ev.away_team,
+          league: meta.n, sport: meta.s, stadium: '',
+          odds1: +h1.toFixed(2), odds2: +h2.toFixed(2),
+          oddsX: hX ? +hX.toFixed(2) : null,
+          oddsO: totO ? +totO.price.toFixed(2) : null,
+          oddsU: totU ? +totU.price.toFixed(2) : null,
+          totLine: totO?.point || 2.5,
+          time: mt, autoAdded: true,
+          oddsHistory: [{t: Date.now(), o1: +h1.toFixed(2), o2: +h2.toFixed(2)}],
+          lineMovement: 'stable',
+        };
+        m._wx = L2CITY[meta.n] || 'Moscow';
+        matches.push(m);
+        addLog('src', `📡 ${EMO[meta.s]||'🏆'} ${meta.n}: ${ev.home_team}—${ev.away_team} · П1:${m.odds1} П2:${m.odds2} · ${mskTime(mt)} МСК`);
+      }
+    });
+  });
+  renderMatches();
+}
+
+// ══════════════════════════════════════════════════
+// SOURCE 2: football-data.org — БЕСПЛАТНО (с ключом ∞)
+// Без ключа: лимит ~10 запросов/мин с публичного эндпоинта
+// С ключом: больше лиг + стабильнее
+// ══════════════════════════════════════════════════
+async function srcFD() {
+  setChip('fd', 'load', 'FOOTBALL-DATA');
+  const fdKey = gFD();
+  const comps = [
+    {c:'PL', n:'АПЛ'}, {c:'PD', n:'Ла Лига'}, {c:'BL1', n:'Бундеслига'},
+    {c:'SA', n:'Серия А'}, {c:'FL1', n:'Лига 1'}, {c:'CL', n:'Лига Чемпионов'},
+    {c:'EL', n:'Лига Европы'}, {c:'PPL', n:'Примейра'}, {c:'DED', n:'Эредивизи'},
+  ];
+  let total = 0;
+  let okCount = 0;
+  // Без ключа берём 6 топ-лиг, с ключом — все 9
+  const limit = fdKey ? comps.length : 6;
+  const headers = fdKey ? {'X-Auth-Token': fdKey} : {};
+
+  for (const {c, n} of comps.slice(0, limit)) {
+    try {
+      const r = await fetch(`https://api.football-data.org/v4/competitions/${c}/matches?status=SCHEDULED&limit=30`, {
+        signal: AbortSignal.timeout(7000),
+        headers
+      });
+      if (!r.ok) {
+        addLog('warn', `football-data: ${n} → HTTP ${r.status}${r.status===403?' (нужен API key)':''}${r.status===429?' (rate limit)':''}`);
+        continue;
+      }
+      okCount++;
+      const d = await r.json();
+      (d.matches || []).forEach(ev => {
+        const mt = new Date(ev.utcDate);
+        if (isNaN(mt.getTime())) return;
+        const diffM = (mt - new Date()) / 60000;
+        if (diffM < -30 || diffM > 10080) return; // 7 дней (вместо 72ч)
+        const t1 = ev.homeTeam?.name || ev.homeTeam?.shortName, t2 = ev.awayTeam?.name || ev.awayTeam?.shortName;
+        if (!t1 || !t2) return;
+        total++;
+        if (!matches.find(m => sim(m.team1, t1) && sim(m.team2, t2))) {
+          const m = {id: Date.now() + Math.random(), team1: t1, team2: t2, league: n, sport: 'Футбол', stadium: ev.venue||'', odds1: 2.0, odds2: 3.2, time: mt, autoAdded: true};
+          m._wx = L2CITY[n] || 'London';
+          matches.push(m);
+        }
+      });
+    } catch(e) {}
+  }
+
+  // Финальный статус: ok если хотя бы одна лига загрузилась
+  if (okCount > 0) {
+    setChip('fd', 'ok', 'FOOTBALL-DATA');
+    setSrc('fd', 'football-data.org', `${total} матчей · ${okCount}/${limit} лиг · ${fdKey?'ключ ✓':'без ключа'}`, 'ok');
+    addLog('src', `⚽ football-data: ${total} матчей из ${okCount} лиг`);
+  } else {
+    setChip('fd', 'err', 'FOOTBALL-DATA');
+    setSrc('fd', 'football-data.org', `Rate limit или нет ключа`, 'err');
+    addLog('warn', `football-data недоступен — добавь ключ в Настройки`);
+  }
+  if (total > 0) renderMatches();
+}
+
+// ══════════════════════════════════════════════════
+// SOURCE 3: TheSportsDB — ВСЕ ВИДЫ СПОРТА, БЕСПЛАТНО ∞
+// ══════════════════════════════════════════════════
+async function srcSDB() {
+  setChip('sdb', 'load', 'SPORTSDB');
+  const leagues = [
+    // ФУТБОЛ — топ лиги
+    {id:'4480', n:'РПЛ', s:'Футбол'},
+    {id:'4328', n:'АПЛ', s:'Футбол'},
+    {id:'4329', n:'Чемпионшип', s:'Футбол'},
+    {id:'4330', n:'Ла Лига', s:'Футбол'},
+    {id:'4396', n:'Ла Лига 2', s:'Футбол'},
+    {id:'4331', n:'Бундеслига', s:'Футбол'},
+    {id:'4394', n:'Бундеслига 2', s:'Футбол'},
+    {id:'4332', n:'Серия А', s:'Футбол'},
+    {id:'4351', n:'Серия Б', s:'Футбол'},
+    {id:'4334', n:'Лига Чемпионов', s:'Футбол'},
+    {id:'4344', n:'Лига Европы', s:'Футбол'},
+    {id:'4481', n:'Лига Конференций', s:'Футбол'},
+    {id:'4337', n:'Эредивизи', s:'Футбол'},
+    {id:'4344', n:'Лига 1 Франция', s:'Футбол'},
+    {id:'4347', n:'Примейра Португалия', s:'Футбол'},
+    {id:'4346', n:'Турецкая Суперлига', s:'Футбол'},
+    {id:'4422', n:'MLS', s:'Футбол'},
+    {id:'4344', n:'Бельгийская Про', s:'Футбол'},
+    {id:'4338', n:'Шотландская Премьер', s:'Футбол'},
+    {id:'4339', n:'Австрийская Бундеслига', s:'Футбол'},
+    // ХОККЕЙ
+    {id:'4335', n:'КХЛ', s:'Хоккей'},
+    {id:'4424', n:'НХЛ', s:'Хоккей'},
+    {id:'4810', n:'AHL', s:'Хоккей'},
+    {id:'4416', n:'SHL Швеция', s:'Хоккей'},
+    {id:'4417', n:'Liiga Финляндия', s:'Хоккей'},
+    // БАСКЕТБОЛ
+    {id:'4387', n:'НБА', s:'Баскетбол'},
+    {id:'4391', n:'WNBA', s:'Баскетбол'},
+    {id:'4346', n:'Евролига', s:'Баскетбол'},
+    {id:'4607', n:'NCAA Basketball', s:'Баскетбол'},
+    {id:'4408', n:'Eurocup', s:'Баскетбол'},
+    // ММА / БОКС
+    {id:'4443', n:'UFC/MMA', s:'MMA'},
+    {id:'4445', n:'Bellator', s:'MMA'},
+    {id:'4446', n:'Boxing', s:'MMA'},
+    {id:'4474', n:'PFL', s:'MMA'},
+    // АМЕРИКАНСКИЙ ФУТБОЛ
+    {id:'4391', n:'NFL', s:'Футбол'},
+    // БЕЙСБОЛ
+    {id:'4424', n:'MLB', s:'Бейсбол'},
+  ];
+  let total = 0;
+  for (const lg of leagues) {
+    try {
+      const r = await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${lg.id}`, {signal: AbortSignal.timeout(5000)});
+      if (!r.ok) continue;
+      const d = await r.json();
+      (d.events || []).forEach(ev => {
+        let mt;
+        if (ev.strTimestamp) {
+          mt = new Date(ev.strTimestamp); // UTC ISO
+        } else {
+          mt = new Date(ev.dateEvent + 'T' + (ev.strTime || '15:00:00') + 'Z');
+        }
+        if (isNaN(mt.getTime())) return;
+        const diffM = (mt - new Date()) / 60000;
+        if (diffM < -30 || diffM > 10080) return; // 7 дней (10080 минут)
+        const t1 = ev.strHomeTeam, t2 = ev.strAwayTeam;
+        if (!t1 || !t2) return;
+        total++;
+        const ex = matches.find(m => sim(m.team1, t1) && sim(m.team2, t2));
+        if (ex) {
+          if (ev.strVenue && !ex.stadium) ex.stadium = ev.strVenue;
+        } else {
+          const m = {id: Date.now() + Math.random(), team1: t1, team2: t2, league: lg.n, sport: lg.s, stadium: ev.strVenue || '', odds1: 2.0, odds2: 3.2, time: mt, autoAdded: true};
+          m._wx = S2CITY[m.stadium] || L2CITY[lg.n] || 'Moscow';
+          matches.push(m);
+          addLog('src', `${EMO[lg.s]||'🏆'} SDB: ${t1}—${t2} (${lg.n}) ${mskTime(mt)} МСК`);
+        }
+      });
+    } catch(e) {}
+  }
+  setChip('sdb', total > 0 ? 'ok' : 'err', 'SPORTSDB');
+  setSrc('sdb', 'TheSportsDB', `${total} событий · БЕСПЛАТНО ∞`, total > 0 ? 'ok' : 'err');
+  if (total > 0) renderMatches();
+}
+
+// ══════════════════════════════════════════════════
+// SOURCE 4: OpenLigaDB — Бундеслига + результаты
+// ══════════════════════════════════════════════════
+async function srcOpenLiga() {
+  setChip('oliga', 'load', 'OPENLIGADB');
+  let total = 0;
+  try {
+    const r = await fetch('https://api.openligadb.de/getmatchdata/bl1', {signal: AbortSignal.timeout(6000)});
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    (d || []).forEach(ev => {
+      if (!ev.matchDateTimeUTC) return;
+      const mt = new Date(ev.matchDateTimeUTC);
+      const diffM = (mt - new Date()) / 60000;
+      if (diffM < -30 || diffM > 10080) return; // 7 дней
+      const t1 = ev.team1?.teamName, t2 = ev.team2?.teamName;
+      if (!t1 || !t2) return;
+      total++;
+      const ex = matches.find(m => sim(m.team1, t1) || sim(m.team2, t2));
+      if (ex) {
+        const res = ev.matchResults?.[ev.matchResults.length - 1];
+        if (res !== undefined && ev.matchIsFinished) ex._result = `${res.pointsTeam1}:${res.pointsTeam2}`;
+      } else {
+        const m = {id: Date.now() + Math.random(), team1: t1, team2: t2, league: 'Бундеслига', sport: 'Футбол', stadium: '', odds1: 2.0, odds2: 3.2, time: mt, autoAdded: true, _wx: 'Berlin'};
+        matches.push(m);
+      }
+    });
+    setChip('oliga', 'ok', 'OPENLIGADB');
+    setSrc('oliga', 'OpenLigaDB', `${total} матчей Бундеслиги · БЕСПЛАТНО ∞`, 'ok');
+    if (total > 0) renderMatches();
+  } catch(e) {
+    setChip('oliga', 'err', 'OPENLIGADB');
+    setSrc('oliga', 'OpenLigaDB', 'Недоступен', 'err');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// SOURCE 4b: ESPN Public API — БЕСПЛАТНО ∞
+// Огромная база: NFL, NBA, NHL, MLB, MLS, теннис, F1, бокс
+// ══════════════════════════════════════════════════
+async function srcESPN() {
+  setChip('espn', 'load', 'ESPN');
+  const endpoints = [
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard', n:'АПЛ', s:'Футбол', city:'London'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard', n:'Ла Лига', s:'Футбол', city:'Madrid'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard', n:'Бундеслига', s:'Футбол', city:'Berlin'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/scoreboard', n:'Серия А', s:'Футбол', city:'Rome'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/scoreboard', n:'Лига 1', s:'Футбол', city:'Paris'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard', n:'Лига Чемпионов', s:'Футбол', city:'London'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.europa/scoreboard', n:'Лига Европы', s:'Футбол', city:'London'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard', n:'MLS', s:'Футбол', city:'New York'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/soccer/mex.1/scoreboard', n:'Лига МХ', s:'Футбол', city:'Mexico City'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard', n:'НБА', s:'Баскетбол', city:'New York'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard', n:'WNBA', s:'Баскетбол', city:'New York'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard', n:'NCAA Basketball', s:'Баскетбол', city:'New York'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard', n:'НХЛ', s:'Хоккей', city:'Toronto'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard', n:'NFL', s:'Футбол', city:'New York'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard', n:'NCAA FB', s:'Футбол', city:'New York'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard', n:'MLB', s:'Бейсбол', city:'New York'},
+    {url:'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard', n:'UFC', s:'MMA', city:'Las Vegas'},
+  ];
+  let total = 0, okCount = 0;
+  for (const ep of endpoints) {
+    try {
+      const r = await fetch(ep.url, {signal: AbortSignal.timeout(6000)});
+      if (!r.ok) continue;
+      okCount++;
+      const d = await r.json();
+      (d.events || []).forEach(ev => {
+        if (!ev.date) return;
+        const mt = new Date(ev.date);
+        if (isNaN(mt.getTime())) return;
+        const diffM = (mt - new Date()) / 60000;
+        if (diffM < -30 || diffM > 10080) return; // 7 дней
+        const comp = ev.competitions?.[0];
+        if (!comp || !comp.competitors || comp.competitors.length < 2) return;
+        // ESPN: home обычно [0], away [1] (но проверим по homeAway)
+        const home = comp.competitors.find(c => c.homeAway === 'home') || comp.competitors[0];
+        const away = comp.competitors.find(c => c.homeAway === 'away') || comp.competitors[1];
+        const t1 = home?.team?.displayName || home?.team?.name;
+        const t2 = away?.team?.displayName || away?.team?.name;
+        if (!t1 || !t2) return;
+        // Skip уже завершённые
+        if (comp.status?.type?.completed) return;
+        total++;
+        const ex = matches.find(m => sim(m.team1, t1) && sim(m.team2, t2));
+        if (ex) {
+          if (comp.venue?.fullName && !ex.stadium) ex.stadium = comp.venue.fullName;
+        } else {
+          // ESPN может давать кэфы в odds
+          const odds = comp.odds?.[0];
+          let o1 = 2.0, o2 = 3.2, oX = null;
+          if (odds?.homeTeamOdds?.moneyLine) o1 = +(odds.homeTeamOdds.moneyLine > 0 ? (odds.homeTeamOdds.moneyLine/100+1) : (100/Math.abs(odds.homeTeamOdds.moneyLine)+1)).toFixed(2);
+          if (odds?.awayTeamOdds?.moneyLine) o2 = +(odds.awayTeamOdds.moneyLine > 0 ? (odds.awayTeamOdds.moneyLine/100+1) : (100/Math.abs(odds.awayTeamOdds.moneyLine)+1)).toFixed(2);
+          const m = {
+            id: Date.now() + Math.random(),
+            team1: t1, team2: t2, league: ep.n, sport: ep.s,
+            stadium: comp.venue?.fullName || '',
+            odds1: o1, odds2: o2, oddsX: oX,
+            time: mt, autoAdded: true, _wx: ep.city,
+          };
+          matches.push(m);
+          addLog('src', `${EMO[ep.s]||'🏆'} ESPN: ${t1}—${t2} (${ep.n}) ${mskTime(mt)} МСК`);
+        }
+      });
+    } catch(e) {}
+  }
+  if (okCount > 0) {
+    setChip('espn', 'ok', 'ESPN');
+    setSrc('espn', 'ESPN API', `${total} событий · ${okCount}/${endpoints.length} лиг · БЕСПЛАТНО ∞`, 'ok');
+    addLog('src', `📡 ESPN: ${total} матчей из ${okCount} лиг`);
+  } else {
+    setChip('espn', 'err', 'ESPN');
+    setSrc('espn', 'ESPN API', 'Недоступен', 'err');
+  }
+  if (total > 0) renderMatches();
+}
+
+// ══════════════════════════════════════════════════
+// SOURCE 4c: API-FOOTBALL Public — пилотная версия
+// Бесплатный публичный демо-эндпоинт (резервный источник)
+// ══════════════════════════════════════════════════
+async function srcAPISports() {
+  setChip('apisp', 'load', 'API-SPORTS');
+  let total = 0;
+  try {
+    // Публичный демо-фид от theSportsDB для всех ивентов на сегодня
+    const today = new Date().toISOString().slice(0,10);
+    const r = await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${today}&s=Soccer`, {signal: AbortSignal.timeout(6000)});
+    if (r.ok) {
+      const d = await r.json();
+      (d.events || []).forEach(ev => {
+        if (!ev.dateEvent || !ev.strHomeTeam || !ev.strAwayTeam) return;
+        const mt = new Date(ev.strTimestamp || (ev.dateEvent + 'T' + (ev.strTime || '15:00:00') + 'Z'));
+        if (isNaN(mt.getTime())) return;
+        const diffM = (mt - new Date()) / 60000;
+        if (diffM < -30 || diffM > 10080) return;
+        const t1 = ev.strHomeTeam, t2 = ev.strAwayTeam;
+        if (!matches.find(m => sim(m.team1, t1) && sim(m.team2, t2))) {
+          const m = {
+            id: Date.now() + Math.random(),
+            team1: t1, team2: t2,
+            league: ev.strLeague || 'Soccer',
+            sport: 'Футбол', stadium: ev.strVenue || '',
+            odds1: 2.0, odds2: 3.2,
+            time: mt, autoAdded: true, _wx: 'Moscow',
+          };
+          matches.push(m);
+          total++;
+        }
+      });
+    }
+    // Также берём хоккей и баскетбол
+    for (const sport of ['Ice Hockey', 'Basketball', 'American Football']) {
+      try {
+        const r2 = await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${today}&s=${encodeURIComponent(sport)}`, {signal: AbortSignal.timeout(5000)});
+        if (!r2.ok) continue;
+        const d2 = await r2.json();
+        const sportMap = {'Ice Hockey':'Хоккей', 'Basketball':'Баскетбол', 'American Football':'Футбол'};
+        (d2.events || []).forEach(ev => {
+          if (!ev.dateEvent || !ev.strHomeTeam || !ev.strAwayTeam) return;
+          const mt = new Date(ev.strTimestamp || (ev.dateEvent + 'T' + (ev.strTime || '15:00:00') + 'Z'));
+          if (isNaN(mt.getTime())) return;
+          const diffM = (mt - new Date()) / 60000;
+          if (diffM < -30 || diffM > 10080) return;
+          const t1 = ev.strHomeTeam, t2 = ev.strAwayTeam;
+          if (!matches.find(m => sim(m.team1, t1) && sim(m.team2, t2))) {
+            const m = {
+              id: Date.now() + Math.random(),
+              team1: t1, team2: t2,
+              league: ev.strLeague || sport,
+              sport: sportMap[sport] || sport, stadium: ev.strVenue || '',
+              odds1: 2.0, odds2: 3.2,
+              time: mt, autoAdded: true, _wx: 'Moscow',
+            };
+            matches.push(m);
+            total++;
+          }
+        });
+      } catch(e) {}
+    }
+    setChip('apisp', total > 0 ? 'ok' : 'err', 'API-SPORTS');
+    setSrc('apisp', 'API-Sports / SDB Day', `${total} событий на сегодня`, total > 0 ? 'ok' : 'err');
+    if (total > 0) renderMatches();
+  } catch(e) {
+    setChip('apisp', 'err', 'API-SPORTS');
+    setSrc('apisp', 'API-Sports / SDB Day', 'Недоступен', 'err');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// SOURCE 5: Reddit — все виды спорта
+// ══════════════════════════════════════════════════
+async function srcReddit() {
+  setChip('reddit', 'load', 'REDDIT');
+  const subs = ['soccer','hockey','nba','tennis','MMA','GlobalOffensive','DotA2','UEFAChampionsLeague','KHL','volleyball'];
+  let total = 0;
+  for (const sub of subs) {
+    try {
+      const r = await fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=5`, {
+        headers: {'User-Agent': 'Almanac/1.0'},
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!r.ok) continue;
+      const d = await r.json();
+      (d.data?.children || []).forEach(p => {
+        const title = p.data?.title || '';
+        if (!title || newsStore.find(n => n.title === title)) return;
+        newsStore.unshift({title, source: 'r/' + sub, time: new Date(p.data.created_utc * 1000), impact: newsImpact(title)});
+        total++;
+      });
+    } catch(e) {}
+  }
+  if (newsStore.length > 150) newsStore = newsStore.slice(0, 150);
+  setChip('reddit', 'ok', 'REDDIT');
+  setSrc('reddit', 'Reddit ×10 (soccer/hockey/nba...)', `+${total} постов · БЕСПЛАТНО ∞`, 'ok');
+}
+
+// ══════════════════════════════════════════════════
+// SOURCE 6: RSS — РОССИЙСКИЕ СМИ
+// Sports.ru, Чемпионат, Спорт-Экспресс, РИА Спорт
+// ══════════════════════════════════════════════════
+async function srcRSS() {
+  setChip('rss', 'load', 'SPORTS.RU/РИА');
+  const feeds = [
+    {url: 'https://www.sports.ru/rss/football.xml', name: 'Sports.ru Football'},
+    {url: 'https://www.sports.ru/rss/hockey.xml', name: 'Sports.ru Hockey'},
+    {url: 'https://www.championat.com/rss/football.xml', name: 'Чемпионат'},
+    {url: 'https://www.sport-express.ru/news/rss/', name: 'Спорт-Экспресс'},
+    {url: 'https://rsport.ria.ru/rss/', name: 'РИА Спорт'},
+    // International fallbacks
+    {url: 'https://www.skysports.com/rss/12040', name: 'Sky Sports'},
+    {url: 'https://www.transfermarkt.com/rss/news', name: 'Transfermarkt'},
+  ];
+  let total = 0;
+  for (const f of feeds) {
+    try {
+      // Try allorigins first (more reliable for Russian sites)
+      let items = [];
+      try {
+        const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(f.url)}`;
+        const r = await fetch(proxy, {signal: AbortSignal.timeout(7000)});
+        if (r.ok) {
+          const d = await r.json();
+          const xml = new DOMParser().parseFromString(d.contents || '', 'text/xml');
+          xml.querySelectorAll('item').forEach(item => {
+            const title = item.querySelector('title')?.textContent?.trim() || '';
+            const pubDate = item.querySelector('pubDate')?.textContent || '';
+            if (title) items.push({title, pubDate});
+          });
+        }
+      } catch(e1) {
+        // Fallback: rss2json
+        try {
+          const r2 = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(f.url)}&count=10`, {signal: AbortSignal.timeout(6000)});
+          if (r2.ok) {
+            const d2 = await r2.json();
+            if (d2.status === 'ok') (d2.items || []).forEach(item => { if (item.title) items.push({title: item.title.trim(), pubDate: item.pubDate}); });
+          }
+        } catch(e2) {}
+      }
+      items.forEach(({title, pubDate}) => {
+        if (!title || newsStore.find(n => n.title === title)) return;
+        newsStore.unshift({title, source: f.name, time: pubDate ? new Date(pubDate) : new Date(), impact: newsImpact(title)});
+        total++;
+      });
+    } catch(e) {}
+  }
+  if (newsStore.length > 150) newsStore = newsStore.slice(0, 150);
+  setChip('rss', total > 0 ? 'ok' : 'err', 'SPORTS.RU/РИА');
+  setSrc('rss', 'Sports.ru · Чемпионат · СЭ · РИА', `+${total} новостей`, total > 0 ? 'ok' : 'err');
+  if (total > 0) addLog('src', `📰 Российские СМИ: +${total}`);
+}
+
+// ══════════════════════════════════════════════════
+// SOURCE 7: Open-Meteo — погода по городу матча
+// Бесплатный API без ключа, идеальный CORS, надёжнее wttr.in
+// ══════════════════════════════════════════════════
+const CITY_COORDS = {
+  'Moscow': [55.7558, 37.6173],
+  'Saint Petersburg': [59.9311, 30.3609],
+  'London': [51.5074, -0.1278],
+  'Paris': [48.8566, 2.3522],
+  'Berlin': [52.5200, 13.4050],
+  'Rome': [41.9028, 12.4964],
+  'Madrid': [40.4168, -3.7038],
+  'Toronto': [43.6532, -79.3832],
+  'New York': [40.7128, -74.0060],
+  'Las Vegas': [36.1699, -115.1398],
+  'Rostov-on-Don': [47.2357, 39.7015],
+  'Munich': [48.1351, 11.5820],
+  'Barcelona': [41.3851, 2.1734],
+  'Manchester': [53.4808, -2.2426],
+  'Liverpool': [53.4084, -2.9916],
+  'Milan': [45.4642, 9.1900],
+  'Amsterdam': [52.3676, 4.9041],
+  'Lisbon': [38.7223, -9.1393],
+};
+
+function wxCodeToOurs(c) {
+  // Open-Meteo WMO codes → наши категории (близкие к wttr)
+  if (c === 0) return 113;          // ясно
+  if (c <= 3) return 119;            // частично облачно
+  if (c <= 48) return 143;           // туман
+  if (c <= 67) return 296;           // дождь
+  if (c <= 77) return 320;           // снег
+  if (c <= 82) return 305;           // ливень
+  if (c <= 86) return 320;           // снежный заряд
+  if (c <= 99) return 389;           // гроза
+  return 119;
+}
+
+function wxCodeDesc(c) {
+  if (c === 0) return 'Ясно';
+  if (c <= 3) return 'Переменная облачность';
+  if (c <= 48) return 'Туман';
+  if (c <= 53) return 'Морось';
+  if (c <= 57) return 'Замерзающая морось';
+  if (c <= 65) return 'Дождь';
+  if (c <= 67) return 'Замерзающий дождь';
+  if (c <= 75) return 'Снег';
+  if (c <= 77) return 'Снежные зёрна';
+  if (c <= 82) return 'Ливень';
+  if (c <= 86) return 'Снежный заряд';
+  if (c <= 95) return 'Гроза';
+  if (c <= 99) return 'Гроза с градом';
+  return 'Облачно';
+}
+
+async function srcWeather() {
+  setChip('wttr', 'load', 'ПОГОДА');
+  const cities = new Set(['Moscow', 'Saint Petersburg', 'London', 'Paris', 'Berlin', 'Rome', 'Madrid']);
+  matches.forEach(m => { if (m._wx) cities.add(m._wx); });
+  let ok = 0, errCount = 0;
+
+  // Запросы параллельно — Open-Meteo это позволяет без ограничений
+  const fetches = [...cities].map(async city => {
+    if (wxCache[city] && (Date.now() - wxCache[city]._ts) < 1800000) { ok++; return; } // 30мин кэш
+    const coords = CITY_COORDS[city];
+    if (!coords) return; // для неизвестных городов пропускаем
+    const [lat, lon] = coords;
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,weather_code&timezone=auto`;
+      const r = await fetch(url, {signal: AbortSignal.timeout(7000)});
+      if (!r.ok) { errCount++; return; }
+      const d = await r.json();
+      const cur = d.current;
+      if (!cur) { errCount++; return; }
+      wxCache[city] = {
+        temp: Math.round(cur.temperature_2m),
+        wind: Math.round(cur.wind_speed_10m || 0),
+        rain: cur.precipitation || 0,
+        desc: wxCodeDesc(cur.weather_code),
+        code: wxCodeToOurs(cur.weather_code),
+        _ts: Date.now(),
+      };
+      ok++;
+    } catch(e) { errCount++; }
+  });
+  await Promise.all(fetches);
+
+  if (ok > 0) {
+    setChip('wttr', 'ok', 'ПОГОДА');
+    setSrc('wttr', 'Open-Meteo Weather', `${ok} городов · БЕСПЛАТНО ∞`, 'ok');
+    addLog('src', `🌦 Погода: ${ok} городов загружены`);
+  } else {
+    setChip('wttr', 'err', 'ПОГОДА');
+    setSrc('wttr', 'Open-Meteo Weather', `Не удалось загрузить (${errCount} ошибок)`, 'err');
+  }
+}
+
+function wxIcon(code) {
+  if (!code) return '🌤';
+  if (code <= 113) return '☀️';
+  if (code <= 143) return '⛅';
+  if (code <= 260) return '🌫';
+  if (code <= 296) return '🌧';
+  if (code <= 320) return '🌨';
+  return '⛈';
+}
+function getWx(m) { return wxCache[m._wx || 'Moscow'] || null; }
+
+// ══════════════════════════════════════════════════
+// AUTO RESULT CHECK
+// Multi-source: OpenLigaDB + TheSportsDB (по дате) + Odds API + football-data
+// ══════════════════════════════════════════════════
+async function autoCheckResults() {
+  const isPending = (e) => e.result === 'pending' && !e.autoChecked;
+  // Берём только те ставки, у которых матч уже мог закончиться (~2.5ч после старта)
+  const ready = () => results.filter(e => isPending(e) && (Date.now() - new Date(e.time).getTime()) > 2 * 60 * 60 * 1000);
+
+  if (!ready().length) return;
+  addLog('info', `🔍 Проверяю результаты ${ready().length} ставок...`);
+  let checked = 0;
+
+  // Helper: попытка сматчить и проставить
+  const tryMatch = (e, t1Name, t2Name, hsc, asc) => {
+    if (e.autoChecked) return false;
+    // Bidirectional match — иногда home/away меняются местами в источниках
+    const matchA = sim(e.team1, t1Name) && sim(e.team2, t2Name);
+    const matchB = sim(e.team1, t2Name) && sim(e.team2, t1Name);
+    if (!matchA && !matchB) return false;
+    // Если перепутаны home/away — переворачиваем счёт под нашу нотацию (team1 = хозяева)
+    let h = hsc, a = asc;
+    if (matchB) { h = asc; a = hsc; }
+    const won = evalBet(e, h, a, h + a);
+    if (won !== null) { markResult(e, won, h, a); return true; }
+    return false;
+  };
+
+  // 1. OpenLigaDB — Бундеслига (без CORS, всегда стабильно)
+  try {
+    const r = await fetch('https://api.openligadb.de/getmatchdata/bl1', {signal: AbortSignal.timeout(6000)});
+    if (r.ok) {
+      const d = await r.json();
+      (d || []).forEach(ev => {
+        if (!ev.matchIsFinished) return;
+        const res = ev.matchResults?.[ev.matchResults.length - 1];
+        if (!res) return;
+        const t1 = ev.team1?.teamName || '', t2 = ev.team2?.teamName || '';
+        ready().forEach(e => { if (tryMatch(e, t1, t2, res.pointsTeam1, res.pointsTeam2)) checked++; });
+      });
+    }
+  } catch(ex) {}
+
+  // 2. TheSportsDB — по дате (вчера/сегодня/2 дня назад) для всех видов спорта
+  for (const daysAgo of [0, 1, 2]) {
+    try {
+      const date = new Date(Date.now() - daysAgo * 86400000).toISOString().slice(0, 10);
+      const sports = ['Soccer', 'Ice_Hockey', 'Basketball', 'Tennis', 'American_Football', 'Baseball', 'MMA'];
+      for (const sport of sports) {
+        try {
+          const r = await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${date}&s=${sport}`, {signal: AbortSignal.timeout(5000)});
+          if (!r.ok) continue;
+          const d = await r.json();
+          (d.events || []).forEach(ev => {
+            if (ev.intHomeScore == null || ev.intHomeScore === '' || ev.strStatus === 'Not Started') return;
+            const hsc = parseInt(ev.intHomeScore);
+            const asc = parseInt(ev.intAwayScore);
+            if (isNaN(hsc) || isNaN(asc)) return;
+            const t1 = ev.strHomeTeam || '', t2 = ev.strAwayTeam || '';
+            ready().forEach(e => { if (tryMatch(e, t1, t2, hsc, asc)) checked++; });
+          });
+        } catch(e) {}
+      }
+    } catch(ex) {}
+  }
+
+  // 3. Odds API scores (если есть ключ) — самый надёжный источник для BetBoom видов
+  const oddsKey = gO();
+  if (oddsKey) {
+    for (const sport of BETBOOM_SPORTS.slice(0, 10)) {
+      if (!ready().length) break;
+      try {
+        const r = await fetch(
+          `https://api.the-odds-api.com/v4/sports/${sport.key}/scores/?apiKey=${oddsKey}&daysFrom=3`,
+          {signal: AbortSignal.timeout(6000)}
+        );
+        if (!r.ok) continue;
+        const d = await r.json();
+        if (!Array.isArray(d)) continue;
+        d.forEach(ev => {
+          if (!ev.completed) return;
+          const hsc = parseFloat(ev.scores?.find(s => s.name === ev.home_team)?.score ?? -1);
+          const asc = parseFloat(ev.scores?.find(s => s.name === ev.away_team)?.score ?? -1);
+          if (hsc < 0 || asc < 0) return;
+          ready().forEach(e => { if (tryMatch(e, ev.home_team, ev.away_team, hsc, asc)) checked++; });
+        });
+      } catch(e) {}
+    }
+  }
+
+  // 4. football-data.org — последние результаты по топ-лигам (если есть ключ)
+  const fdKey = gFD();
+  if (fdKey && ready().length) {
+    const comps = ['PL', 'PD', 'BL1', 'SA', 'FL1', 'CL', 'EL'];
+    for (const c of comps) {
+      if (!ready().length) break;
+      try {
+        const r = await fetch(`https://api.football-data.org/v4/competitions/${c}/matches?status=FINISHED&limit=20`, {
+          signal: AbortSignal.timeout(6000),
+          headers: {'X-Auth-Token': fdKey}
+        });
+        if (!r.ok) continue;
+        const d = await r.json();
+        (d.matches || []).forEach(ev => {
+          const hsc = ev.score?.fullTime?.home, asc = ev.score?.fullTime?.away;
+          if (hsc == null || asc == null) return;
+          const t1 = ev.homeTeam?.name || ev.homeTeam?.shortName, t2 = ev.awayTeam?.name || ev.awayTeam?.shortName;
+          if (!t1 || !t2) return;
+          ready().forEach(e => { if (tryMatch(e, t1, t2, hsc, asc)) checked++; });
+        });
+      } catch(e) {}
+    }
+  }
+
+  if (checked > 0) addLog('ok', `✅ Авто-проверка: закрыто ${checked} ставок`);
+  else if (ready().length > 0) addLog('warn', `⏳ ${ready().length} ставок ещё ожидают финального счёта`);
+
+  saveResults();
+  renderHistory();
+  updWinStats();
+}
+
+function markResult(e, won, hsc, asc) {
+  e.result = won ? 'win' : 'loss';
+  e.autoChecked = true;
+  e.finalScore = `${hsc}:${asc}`;
+  addLog('sig', `${won ? '✅' : '❌'} АВТО: ${e.match} → ${won ? 'ЗАШЛО' : 'НЕ ЗАШЛО'} (${hsc}:${asc})`);
+  pushN(won ? '✅ Прогноз ЗАШЁЛ!' : '❌ Прогноз не зашёл', `${e.match}\n${e.bet} @ ${e.odds}\nСчёт: ${hsc}:${asc}`, 'ar_' + e.id);
+}
+
+function evalBet(e, h, a, tot) {
+  const bt = e.bet_type || '';
+  const b = (e.bet || '').toLowerCase();
+
+  // Тоталы
+  if (bt === 'total_under' || b.includes('меньше') || b.includes('тм')) {
+    const ln = parseFloat(b.match(/(\d+[.,]?\d*)/)?.[1].replace(',', '.') || e.totLine || 2.5);
+    if (tot < ln) return true;
+    if (tot > ln) return false;
+    return null; // push для целых тоталов
+  }
+  if (bt === 'total_over' || b.includes('больше') || b.includes('тб')) {
+    const ln = parseFloat(b.match(/(\d+[.,]?\d*)/)?.[1].replace(',', '.') || e.totLine || 2.5);
+    if (tot > ln) return true;
+    if (tot < ln) return false;
+    return null;
+  }
+
+  // Двойной шанс
+  if (bt === 'double_chance' || b.includes('1x')) return h >= a;
+  if (b.includes('x2') || b.includes('х2')) return a >= h;
+  if (b.includes('12') && b.includes('двойн')) return h !== a;
+
+  // Чистые победы
+  if (bt === 'win_home' || b === 'п1' || (b.includes('п1') && !b.includes('фора'))) return h > a;
+  if (bt === 'win_away' || b === 'п2' || (b.includes('п2') && !b.includes('фора'))) return a > h;
+  if (bt === 'draw' || b.includes('ничья')) return h === a;
+
+  // Обе забьют
+  if (bt === 'btts_yes' || (b.includes('обе') && b.includes('да')) || b.includes('оз да')) return h > 0 && a > 0;
+  if (bt === 'btts_no' || (b.includes('обе') && b.includes('нет')) || b.includes('оз нет')) return h === 0 || a === 0;
+
+  // Форы с поддержкой числового параметра (Ф1 -1.5 / Ф2 +1.5 и т.д.)
+  if (bt === 'handicap_home' || (b.includes('фора') && (b.includes('1') || b.includes('хоз')))) {
+    const m = b.match(/[+-]?\d+[.,]?\d*/);
+    const hcp = m ? parseFloat(m[0].replace(',', '.')) : -0.5;
+    const diff = h - a + hcp;
+    if (diff > 0) return true;
+    if (diff < 0) return false;
+    return null;
+  }
+  if (bt === 'handicap_away' || (b.includes('фора') && (b.includes('2') || b.includes('гост')))) {
+    const m = b.match(/[+-]?\d+[.,]?\d*/);
+    const hcp = m ? parseFloat(m[0].replace(',', '.')) : -0.5;
+    const diff = a - h + hcp;
+    if (diff > 0) return true;
+    if (diff < 0) return false;
+    return null;
+  }
+
+  // Guess from team name
+  if (b.includes((e.team1 || '').toLowerCase().slice(0, 4))) return h > a;
+  if (b.includes((e.team2 || '').toLowerCase().slice(0, 4))) return a > h;
+  return null;
+}
+
+// ══════════════════════════════════════════════════
+// GROQ AI ANALYSIS — THE BRAIN
+// ══════════════════════════════════════════════════
+const SPORT_GUIDE = {
+  Футбол: `ФУТБОЛ — профессиональный фреймворк:
+• ДОМАШНИЙ ФАКТОР: +8-12% к вер. победы (топ-лиги), +12-18% (РПЛ/нижние дивизионы)
+• xG-ПОДХОД: реальная сила = xG за 5-10 матчей > фактических голов (учитывай "везение" в счёте)
+• ФОРМА: последние 5 ВАЖНЕЕ сезонной статистики. Тренд > среднего
+• ТОТАЛЫ: ((avg_goals_home_for + avg_goals_away_against) + (avg_goals_away_for + avg_goals_home_against)) / 2 ≈ ожидаемый тотал
+• МОТИВАЦИЯ: топ-6 vs середняк в конце сезона = разный заряд. Чемпионская гонка/вылет/еврокубки = +фактор
+• УСТАЛОСТЬ: матч <72ч после еврокубка = -8% форме. Ротация состава у фаворита = риск
+• ПОГОДА: ветер >25км/ч, дождь = -0.4 гола к тоталу, преимущество физ.команд
+• СТАТЫ КЛЮЧ: % ударов в створ, % владения, угловые, xG vs xGA
+• ЛАЙВ-ИНДИКАТОР: движение линии вниз на 0.1+ за сутки = умные деньги (sharp money)
+• БАЗА ИСХОДОВ EПЛ: П1 ≈ 46%, X ≈ 25%, П2 ≈ 29%`,
+
+  Хоккей: `ХОККЕЙ — профессиональный фреймворк:
+• ВРАТАРЬ = 35-40% результата. Sv% стартового вратаря КРИТИЧНО
+• BACK-TO-BACK: 2 игры за 2 дня = -12-18% к продуктивности (особенно гостевые)
+• ТРАВЕЛ: перелёт >3 часовых поясов = -8% форме первые 2 матча
+• ТОТАЛЫ: НХЛ ~6.0, КХЛ ~5.0, плей-офф -0.5-1.0 (более закрытая игра)
+• PP/PK: команды с PP>22% и PK>82% = играют в "лучший хоккей"
+• СПЕЦБРИГАДЫ: разница в реализации большинства = главный фактор тотала
+• ОТ/БУЛЛИТЫ: ~23% матчей идут в ОТ — учитывай при расчёте чистых исходов
+• ДОМ. ФАКТОР: НХЛ +5%, КХЛ +8%`,
+
+  Теннис: `ТЕННИС — профессиональный фреймворк:
+• ПОКРЫТИЕ = всё. Ground/Hard/Clay имеют РАЗНЫХ топов. H2H на ДАННОМ покрытии > общий H2H
+• УСТАЛОСТЬ: 3-сетовик накануне = -10-15% выносливости. 5-сетовик = -20%
+• ПОДАЧА: 1st serve % >65% и aces/match = маркер формы. Брейкпоинты save% >60%
+• РЕЙТИНГ ELO TENNIS-DATA важнее ATP/WTA (учитывает свежесть)
+• АНДЕРДОГИ: WTA менее предсказуема — апсеты в 35-40% случаев vs 25-30% ATP
+• ТОТАЛ ГЕЙМОВ: подающие 1-й серв >70% = высокий тотал, грайндеры на грунте = низкий
+• МОТИВАЦИЯ: защита очков из прошлого года = +форма`,
+
+  Баскетбол: `БАСКЕТБОЛ — профессиональный фреймворк:
+• PACE: темп игры (владений за матч) = главный драйвер тотала
+• OFF/DEF RATING: точки на 100 владений > сырых очков
+• ТРАВМЫ ЗВЁЗД: -8-12 очков к команде, но ВАЖНО: -2-4 очка к ЛИНИИ (рынок реагирует)
+• BACK-TO-BACK: -3-5 очков к перформансу. Особенно жёстко для возрастных команд
+• 3PT-VARIANCE: команды с >40% бросков из-за дуги = высокая дисперсия
+• REST ADVANTAGE: 2+ дня отдыха vs усталый соперник = +4-7 очков
+• ДОМ. ФАКТОР НБА: +3.5 очка к линии. Евролига +4-5 очков
+• ТОТАЛЫ: НБА 220-235 норма, Евролига 155-175, 4-я четверть +1-3 если play-off`,
+
+  MMA: `MMA/UFC — профессиональный фреймворк:
+• СТИЛЬ vs СТИЛЬ: грэпплер vs страйкер на канвасе разный матчап. Тх-эра >70% тх = тотальный контроль
+• АНДЕРДОГИ: побеждают в 28-35% случаев — value часто на дог-сайде кэф 2.50-4.00
+• ВЫСОТА/РИЧ: разница >5см в ричэ = серьёзное преимущество страйкеру
+• ВЕСОВЫЕ КАТ: тяжёлые веса = выше % финиша (KO/TKO ~50%), лёгкие = больше судейских
+• УСТАЛОСТЬ КАРДИО: 5-раундовый бой требует элитного кардио, во 2-3 раундах "стенка"
+• КЭМП: смена тренировочного лагеря = красный флаг. Возвращение из лей-офф >12 мес = -форма
+• ТОТАЛЫ РАУНДОВ: финиш% бойца + стиль соперника. Декадентные бои = ТМ 2.5
+• СУДЕЙСТВО: контроль октагона + чистые удары > агрессии без точности`,
+
+  Киберспорт: `КИБЕРСПОРТ — профессиональный фреймворк:
+• ПАТЧ-АДАПТАЦИЯ: команды по-разному реагируют на меты. Форма ПОСЛЕ патча > до
+• LAN vs ONLINE: разные результаты. Топы стабильнее на LAN, апсеты чаще онлайн
+• ФОРМА 2 НЕДЕЛИ > истории года. Состав мог поменяться
+• КАРТЫ/ВЕТО: знай мап-пул соперников. Banstrong-карты часто решают серию
+• ТОТАЛ КАРТ: бо3 1.5 vs 2.5, бо5 2.5/3.5/4.5 — анализируй гэп силы команд
+• ЭТО ИНДИВИДУАЛИ: один из 5 отыграл плохо = -25% шансов команде
+• МАЙОР/ПРАЙМ: на турнирах высокого уровня апсеты реже (~20%)`,
+
+  Волейбол: `ВОЛЕЙБОЛ — профессиональный фреймворк:
+• ПОДАЧА (ace/error ratio) и БЛОК — главные стат показатели
+• ПРИЁМ % >55% = команда играет своё. Низкий приём = разваливается атака
+• ТОТАЛ ПАРТИЙ: 3:0/3:1/3:2 распределяется как 30/40/30. Гэп >2 уровней = чаще 3:0
+• ДОМАШНИЙ ФАКТОР: +6-10% (особенно решающие 4-5 партии)
+• ВЫНОСЛИВОСТЬ: тай-брейк до 15 = психология чаще решает чем ростер`,
+};
+
+const STYLE_GUIDE = {
+  conservative: `СТИЛЬ КОНСЕРВАТИВНЫЙ (профессионал):
+• ТОЛЬКО одиночные ставки. НИКАКИХ экспрессов
+• confidence ≥ 75%, value_score ≥ 6/10
+• Кэфы 1.50-2.20 (зона низкого риска)
+• Предпочтение: тоталы, азиатские форы (-0.25/-0.5), двойной шанс
+• Стейк по Kelly: 1-2% от банка (1/4 Kelly fraction для безопасности)
+• ИЗБЕГАТЬ: чистые победы аутсайдеров, дубль-шанс на topе`,
+
+  balanced: `СТИЛЬ СБАЛАНСИРОВАННЫЙ (профессионал):
+• confidence ≥ 65%, value_score ≥ 5/10
+• Кэфы 1.55-3.50 (sweet spot value)
+• Главное правило: РЕАЛЬНАЯ ВЕРОЯТНОСТЬ > IMPLIED как минимум на 5%
+• Mix: 70% одиночные / 30% экспрессы (макс 3 события)
+• Стейк по Kelly: 1-3%. Чем выше edge — тем больше стейк, но не >3%
+• ROI цель: +5-8% долгосрочно`,
+
+  aggressive: `СТИЛЬ АГРЕССИВНЫЙ (профессионал):
+• confidence ≥ 60%, value_score ≥ 4/10
+• Кэфы 1.80-6.00 (охота на underpriced underdog'ов)
+• Активно ищи market inefficiencies — линии, которые не учли травмы/новости
+• Экспрессы 2-4 события приветствуются (плечи conf ≥ 65%)
+• Стейк до 4%. Variance высокий — нужен большой банк
+• Цель: +12-15% ROI ценой длинных просадок`,
+};
+
+async function analyzeMatch(match) {
+  // ── АТОМАРНАЯ БЛОКИРОВКА ОТ ДУБЛЕЙ ──
+  const sigKey = getSigKey(match);
+  if (sigKeys.has(sigKey) || sigIds.has(match.id)) {
+    addLog('log', `⏭ Пропуск (уже обработан): ${match.team1}—${match.team2}`);
+    return;
+  }
+  // СРАЗУ резервируем чтобы параллельные сканы не дублировались
+  sigKeys.add(sigKey);
+  sigIds.add(match.id);
+  saveSigKey(sigKey);
+
+  const key = gG();
+  if (!key) {
+    addLog('err', `❌ Groq API Key не задан! Зайди в Настройки.`);
+    return;
+  }
+
+  const prog = showProg(match);
+  const wx = getWx(match);
+
+  // ── СОБИРАЕМ СТАТИСТИКУ ──────────────────────────
+  addLog('src', `📊 Загружаю статистику: ${match.team1} vs ${match.team2}...`);
+  let statsCtx = '', h2hCtx = '', standingsCtx = '', injuryCtx = '';
+
+  // 1. TheSportsDB — форма, H2H, таблица
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch(`https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=${encodeURIComponent(match.team1)}`, {signal:AbortSignal.timeout(5000)}),
+      fetch(`https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=${encodeURIComponent(match.team2)}`, {signal:AbortSignal.timeout(5000)}),
+    ]);
+    const d1 = r1.ok ? await r1.json() : null;
+    const d2 = r2.ok ? await r2.json() : null;
+    const id1 = d1?.teams?.[0]?.idTeam;
+    const id2 = d2?.teams?.[0]?.idTeam;
+
+    const parseForm = (events, teamName) => {
+      if (!events?.length) return null;
+      const matches = events.slice(0,7).map(ev=>{
+        const isH=sim(ev.strHomeTeam,teamName);
+        const hs=parseInt(ev.intHomeScore), as=parseInt(ev.intAwayScore);
+        if(isNaN(hs)||isNaN(as)) return null;
+        const sc=isH?hs:as, cn=isH?as:hs;
+        const r=sc>cn?'W':sc<cn?'L':'D';
+        return {r, sc, cn, isH, opp: isH?ev.strAwayTeam:ev.strHomeTeam, date: ev.dateEvent};
+      }).filter(Boolean);
+      if (!matches.length) return null;
+
+      // Базовая строка из 5 матчей
+      const last5 = matches.slice(0,5);
+      const formStr = last5.map(m=>`${m.r} ${m.sc}:${m.cn} vs ${m.opp}(${m.isH?'Д':'Г'})`).join(', ');
+
+      // Агрегация
+      const wins = last5.filter(m=>m.r==='W').length;
+      const draws = last5.filter(m=>m.r==='D').length;
+      const losses = last5.filter(m=>m.r==='L').length;
+      const goalsFor = last5.reduce((s,m)=>s+m.sc,0);
+      const goalsAgainst = last5.reduce((s,m)=>s+m.cn,0);
+      const avgFor = (goalsFor/last5.length).toFixed(2);
+      const avgAg = (goalsAgainst/last5.length).toFixed(2);
+
+      // Дома vs в гостях
+      const homeMatches = last5.filter(m=>m.isH);
+      const awayMatches = last5.filter(m=>!m.isH);
+      const homeWins = homeMatches.filter(m=>m.r==='W').length;
+      const awayWins = awayMatches.filter(m=>m.r==='W').length;
+
+      // Тренд: последние 3 vs предыдущие 2
+      const recent3 = last5.slice(0,3);
+      const recentScore = recent3.reduce((s,m)=>s+(m.r==='W'?3:m.r==='D'?1:0),0);
+      const trend = recentScore >= 7 ? '📈 ВОСХОДЯЩИЙ' : recentScore >= 4 ? '➡️ СТАБИЛЬНЫЙ' : '📉 НИСХОДЯЩИЙ';
+
+      // Серия
+      let streak = 1, streakType = last5[0].r;
+      for(let i=1; i<last5.length; i++){
+        if(last5[i].r === streakType) streak++;
+        else break;
+      }
+      const streakStr = `${streak}${streakType==='W'?'В':streakType==='D'?'Н':'П'}`;
+
+      return `${formStr}
+       └─ Итого 5 матчей: ${wins}В/${draws}Н/${losses}П, голы ${goalsFor}-${goalsAgainst} (avg ${avgFor}/${avgAg})
+       └─ Дома: ${homeWins}/${homeMatches.length}В, В гостях: ${awayWins}/${awayMatches.length}В
+       └─ Серия: ${streakStr} | Тренд: ${trend}`;
+    };
+
+    if (id1 || id2) {
+      const [l1,l2] = await Promise.all([
+        id1?fetch(`https://www.thesportsdb.com/api/v1/json/3/eventslast.php?id=${id1}`,{signal:AbortSignal.timeout(5000)}):null,
+        id2?fetch(`https://www.thesportsdb.com/api/v1/json/3/eventslast.php?id=${id2}`,{signal:AbortSignal.timeout(5000)}):null,
+      ]);
+      if(l1?.ok){const d=await l1.json();const f=parseForm(d.results,match.team1);if(f)statsCtx+=`${match.team1} форма: ${f}\n`;}
+      if(l2?.ok){const d=await l2.json();const f=parseForm(d.results,match.team2);if(f)statsCtx+=`${match.team2} форма: ${f}\n`;}
+    }
+
+    if (id1 && id2) {
+      try {
+        const hr=await fetch(`https://www.thesportsdb.com/api/v1/json/3/eventsh2h.php?idHomeTeam=${id1}&idAwayTeam=${id2}`,{signal:AbortSignal.timeout(5000)});
+        if(hr.ok){
+          const hd=await hr.json();
+          const h2h=(hd.results||[]).slice(0,8);
+          if(h2h.length>0) {
+            const games = h2h.map(ev=>{
+              const hs=parseInt(ev.intHomeScore),as=parseInt(ev.intAwayScore);
+              if(isNaN(hs)) return null;
+              return {home:ev.strHomeTeam, away:ev.strAwayTeam, hs, as, date:ev.dateEvent};
+            }).filter(Boolean);
+
+            if (games.length) {
+              // Агрегация под match.team1
+              let t1Wins = 0, t2Wins = 0, draws = 0, totalGoals = 0;
+              games.forEach(g => {
+                const t1IsHome = sim(g.home, match.team1);
+                const t1Score = t1IsHome ? g.hs : g.as;
+                const t2Score = t1IsHome ? g.as : g.hs;
+                if(t1Score > t2Score) t1Wins++;
+                else if(t1Score < t2Score) t2Wins++;
+                else draws++;
+                totalGoals += g.hs + g.as;
+              });
+              const avgGoals = (totalGoals/games.length).toFixed(2);
+              const dom = t1Wins > t2Wins+1 ? `🔥 ${match.team1} доминирует` :
+                          t2Wins > t1Wins+1 ? `🔥 ${match.team2} доминирует` :
+                          'примерное равенство';
+
+              h2hCtx='Последние '+games.length+' встреч:\n'+games.map(g=>`  • ${g.home} ${g.hs}:${g.as} ${g.away} (${g.date})`).join('\n')+
+                     `\n  └─ Баланс: ${match.team1} ${t1Wins}В | Ничьи ${draws} | ${match.team2} ${t2Wins}В | ${dom}` +
+                     `\n  └─ Средний тотал H2H: ${avgGoals} голов/матч`;
+            }
+          }
+        }
+      }catch(e){}
+    }
+
+    if(id1){
+      try{
+        const lg=d1?.teams?.[0]?.idLeague;
+        if(lg){
+          const sr=await fetch(`https://www.thesportsdb.com/api/v1/json/3/lookuptable.php?l=${lg}&s=current`,{signal:AbortSignal.timeout(5000)});
+          if(sr.ok){
+            const sd=await sr.json();
+            const tbl=sd.table||[];
+            const t1r=tbl.find(r=>sim(r.strTeam,match.team1));
+            const t2r=tbl.find(r=>sim(r.strTeam,match.team2));
+            if(t1r||t2r){
+              standingsCtx='Таблица: ';
+              if(t1r)standingsCtx+=`${match.team1}:#${t1r.intRank}(${t1r.intPoints}оч,${t1r.intWin}в/${t1r.intDraw}н/${t1r.intLoss}п,${t1r.intGoalsFor}:${t1r.intGoalsAgainst}) `;
+              if(t2r)standingsCtx+=`${match.team2}:#${t2r.intRank}(${t2r.intPoints}оч,${t2r.intWin}в/${t2r.intDraw}н/${t2r.intLoss}п,${t2r.intGoalsFor}:${t2r.intGoalsAgainst})`;
+            }
+          }
+        }
+      }catch(e){}
+    }
+  }catch(e){addLog('warn','Статистика: '+e.message);}
+
+  // 2. football-data.org — таблица (если футбол и нет данных)
+  if(match.sport==='Футбол'&&!standingsCtx){
+    const cm={'АПЛ':'PL','Ла Лига':'PD','Бундеслига':'BL1','Серия А':'SA','Лига 1':'FL1','Лига Чемпионов':'CL'};
+    const c=cm[match.league];
+    if(c){try{
+      const r=await fetch(`https://api.football-data.org/v4/competitions/${c}/standings`,{signal:AbortSignal.timeout(5000)});
+      if(r.ok){
+        const d=await r.json();
+        const tbl=d.standings?.[0]?.table||[];
+        const t1=tbl.find(t=>sim(t.team?.name,match.team1));
+        const t2=tbl.find(t=>sim(t.team?.name,match.team2));
+        if(t1||t2){
+          standingsCtx='Таблица: ';
+          if(t1)standingsCtx+=`${match.team1}:#${t1.position}(${t1.points}оч,${t1.won}в/${t1.draw}н/${t1.lost}п,${t1.goalsFor}:${t1.goalsAgainst}) `;
+          if(t2)standingsCtx+=`${match.team2}:#${t2.position}(${t2.points}оч,${t2.won}в/${t2.draw}н/${t2.lost}п,${t2.goalsFor}:${t2.goalsAgainst})`;
+        }
+      }
+    }catch(e){}}
+  }
+
+  // 3. Новости с высоким impact (травмы/дисквалификации)
+  const highNews=newsStore.filter(n=>{
+    if(n.impact!=='high') return false;
+    const t=(match.team1+' '+match.team2+' '+match.league).toLowerCase();
+    return n.title.toLowerCase().split(/\s+/).some(w=>w.length>3&&t.includes(w));
+  }).slice(0,4);
+  if(highNews.length>0) injuryCtx='⚠️ ТРАВМЫ/ДИСКВАЛ:\n'+highNews.map(n=>`• [${n.source}] ${n.title}`).join('\n');
+
+  const relNews=newsStore.filter(n=>{
+    const t=(match.team1+' '+match.team2+' '+match.league).toLowerCase();
+    return n.title.toLowerCase().split(/\s+/).some(w=>w.length>3&&t.includes(w));
+  }).slice(0,8).map(n=>`[${n.source}][${n.impact.toUpperCase()}] ${n.title}`).join('\n')||'Новостей не найдено';
+
+  const wxCtx=wx?`${match._wx||'Москва'}: ${wxIcon(wx.code)} ${wx.desc} ${wx.temp}°C ветер ${wx.wind}км/ч`:'Нет данных';
+
+  // ── ПРЕДРАСЧЁТ МАТЕМАТИКИ (избавляем AI от ошибок счёта) ──
+  const ip1 = +(100/match.odds1).toFixed(2);
+  const ip2 = +(100/match.odds2).toFixed(2);
+  const ipX = match.oddsX ? +(100/match.oddsX).toFixed(2) : 0;
+  const ipO = match.oddsO ? +(100/match.oddsO).toFixed(2) : 0;
+  const ipU = match.oddsU ? +(100/match.oddsU).toFixed(2) : 0;
+  const margin1x2 = ipX ? +(ip1+ip2+ipX).toFixed(2) : +(ip1+ip2).toFixed(2);
+  const marginTot = (ipO && ipU) ? +(ipO+ipU).toFixed(2) : 0;
+  // No-vig (true probabilities without margin)
+  const nv1 = +(ip1/margin1x2*100).toFixed(2);
+  const nv2 = +(ip2/margin1x2*100).toFixed(2);
+  const nvX = ipX ? +(ipX/margin1x2*100).toFixed(2) : 0;
+  // Базовые приоры по типу матча (для сравнения с линией)
+  const isHomeTeam = true; // первая команда = хозяева (стандарт BetBoom)
+  let baseHomeProb = 0;
+  if (match.sport === 'Футбол') baseHomeProb = match.league.includes('РПЛ') ? 47 : 45;
+  else if (match.sport === 'Хоккей') baseHomeProb = 54;
+  else if (match.sport === 'Баскетбол') baseHomeProb = 58;
+  else baseHomeProb = 50;
+
+  const oddsCtx=[
+    `П1 (${match.team1}): кэф ${match.odds1} → implied ${ip1}% → no-vig ${nv1}%`,
+    `П2 (${match.team2}): кэф ${match.odds2} → implied ${ip2}% → no-vig ${nv2}%`,
+    match.oddsX?`Ничья X: кэф ${match.oddsX} → implied ${ipX}% → no-vig ${nvX}%`:'',
+    `Маржа БК (1X2): ${margin1x2}% (норма 105-110%)`,
+    match.oddsO?`ТБ ${match.totLine||2.5}: кэф ${match.oddsO} → implied ${ipO}%`:'',
+    match.oddsU?`ТМ ${match.totLine||2.5}: кэф ${match.oddsU} → implied ${ipU}%`:'',
+    marginTot?`Маржа БК (тотал): ${marginTot}%`:'',
+    baseHomeProb?`📌 БАЗОВЫЙ ПРИОР для ${match.sport} (${match.league}): хозяева побеждают ~${baseHomeProb}% случаев. Твоя оценка ДОЛЖНА учитывать эту базу`:'',
+  ].filter(Boolean).join('\n');
+
+  // ── ДВИЖЕНИЕ ЛИНИИ (sharp money indicator) ──
+  let lineMovCtx = '';
+  if (match.oddsHistory && match.oddsHistory.length >= 1 && match.drift) {
+    const d1 = match.drift.p1, d2 = match.drift.p2;
+    const direction = match.lineMovement === 'home_sharp'
+      ? `🔥 SHARP MONEY НА ХОЗЯЕВ: кэф П1 упал на ${Math.abs(d1)}% — умные деньги верят в ${match.team1}`
+      : match.lineMovement === 'away_sharp'
+      ? `🔥 SHARP MONEY НА ГОСТЕЙ: кэф П2 упал на ${Math.abs(d2)}% — умные деньги верят в ${match.team2}`
+      : `─ Линия стабильна (drift П1: ${d1>=0?'+':''}${d1}%, П2: ${d2>=0?'+':''}${d2}%)`;
+    lineMovCtx = `\n═══ 📊 ДВИЖЕНИЕ ЛИНИИ (KEY INSIGHT) ═══\n${direction}\nИстория наблюдений: ${match.oddsHistory.length} точек за период мониторинга\n⚠️ Sharp money = ставки от профессиональных капперов и синдикатов. Если они идут в одну сторону — у них есть инфо, которой нет в публичном доступе`;
+  }
+
+  const usr=`╔══════════════════════════════════════════════════════════╗
+║  МАТЧ ДЛЯ АНАЛИЗА                                          ║
+╚══════════════════════════════════════════════════════════╝
+
+🏟  ${match.team1} (хозяева) vs ${match.team2} (гости)
+📋 ${match.sport} | ${match.league}
+🕐 ${mskTime(match.time)} МСК · ${mskDate(match.time)}
+⏱  До старта: ${getCD(match.time).mins} минут${match.stadium?'\n🏟  Стадион: '+match.stadium:''}
+
+═══ КОЭФФИЦИЕНТЫ И БАЗОВАЯ МАТЕМАТИКА ═══
+${oddsCtx}${lineMovCtx}
+
+═══ ФОРМА КОМАНД (последние 5 матчей) ═══
+${statsCtx||'⚠️ Данные о форме не получены — основывайся на кэфах, новостях и базовых приорах. Если данных мало — скорее всего НЕ ставь (skip)'}
+
+═══ H2H ИСТОРИЯ (личные встречи) ═══
+${h2hCtx||'⚠️ Данные H2H не получены'}
+
+═══ ТУРНИРНАЯ ТАБЛИЦА И КОНТЕКСТ ═══
+${standingsCtx||'⚠️ Данные таблицы не получены'}
+
+${injuryCtx?'═══ 🚨 ТРАВМЫ И ДИСКВАЛИФИКАЦИИ (ВЫСОКИЙ ИМПАКТ) ═══\n'+injuryCtx+'\n⚠️ ОБЯЗАТЕЛЬНО учти при пересчёте вероятностей (-10-25% к силе пострадавшей стороны)\n':''}
+═══ НОВОСТИ ЗА 48ЧАСОВ (по релевантности) ═══
+${relNews}
+
+═══ ПОГОДА В ГОРОДЕ МАТЧА ═══
+${wxCtx}
+${match.sport==='Футбол'||match.sport==='Теннис'?'(для уличных видов спорта погода КРИТИЧНА — ветер >25км/ч и осадки меняют тоталы)':''}
+
+═══ ЗАДАЧА ═══
+1. Пройди 8 шагов алгоритма (implied → no-vig → форма → H2H → таблица → контекст → твоя оценка → Kelly)
+2. Найди EDGE (разница между твоей реальной вероятностью и implied)
+3. Если EDGE ≥ 5% И confidence ≥ ${gC()}% → дай signal:true
+4. Если данных мало или нет value → signal:false с честной причиной
+5. В reasoning ОБЯЗАТЕЛЬНО приведи конкретные цифры из данных выше
+6. Контр-аргумент в reasoning — это не формальность, это критическая проверка идеи
+
+Помни: ты профессионал. Лучше пропустить 9 матчей и взять 1 правильный, чем выдать 10 посредственных сигналов.`;
+
+  // ── ПРОФЕССИОНАЛЬНЫЙ КАППЕРСКИЙ ПРОМПТ ────────────
+  const sys=`Ты ALMANAC — профессиональный спортивный аналитик-каппер с 15+ годами опыта в букмекерском бизнесе.
+Работал в analytic-team топ-3 БК Европы. Специализация: value-betting, market inefficiencies, ROI-positive стратегии.
+Твоя репутация: точность прогнозов 58-62%, средний ROI +7% за сезон. БК тебя БОЯТСЯ — ты ищешь ошибки в линиях.
+
+═══ ТВОЯ ФИЛОСОФИЯ ═══
+1. Ставка БЕЗ value = автопроигрыш в долгосроке. Маржа БК ~6-8% — её нужно перекрыть edge'ом
+2. Лучше пропустить 5 матчей, чем сделать 1 плохую ставку
+3. Ты ставишь не на "кто выиграет" — ты ставишь на ОШИБКУ ЛИНИИ
+4. Implied probability vs твоя оценка — разница ≥5% = есть value
+5. Confidence ≠ value. Можно быть на 90% уверенным в фаворите за кэф 1.05 — это НЕ ставка
+
+═══ СТИЛЬ ═══
+${STYLE_GUIDE[gS()]}
+
+═══ СПЕЦИФИКА ${match.sport.toUpperCase()} ═══
+${SPORT_GUIDE[match.sport]||SPORT_GUIDE.Футбол}
+
+═══ ВЫБОР ТИПА СТАВКИ (ПРОФЕССИОНАЛЬНЫЙ ПОДХОД) ═══
+Тип ставки выбирается под КОНТЕКСТ матча, а не под желание заработать больше:
+
+• ЧЁТКИЙ ФАВОРИТ + слабый аутсайдер (кэф 1.40-1.70):
+  → Не П1 за дешевый кэф. Лучше ФОРА -1.0/-1.5 если есть запас прочности
+  → Или ИНДИВ. ТОТАЛ фаворита больше 1.5 — почти всегда забивают
+
+• РАВНЫЕ КОМАНДЫ (кэфы П1 и П2 близки):
+  → Двойной шанс 1X или X2 (защита от ничьей)
+  → Тоталы безопаснее побед (меньше variance)
+  → ОЗ "Да" если обе команды атакующие
+
+• МАТЧ ГОЛЕАДОРОВ (avg голов >2.5 за 5 матчей у обеих):
+  → ТОТАЛ БОЛЬШЕ 2.5/3.0
+  → ОЗ "Да"
+  → Индив. тотал больше 1.5 на сильнейшую атаку
+
+• ЗАЩИТНЫЕ КОМАНДЫ (avg <1.5 голов за матч):
+  → ТОТАЛ МЕНЬШЕ 2.5/2.0
+  → ОЗ "Нет"
+  → Точный счёт 1:0 / 0:0 / 1:1 (только при сильных индикаторах)
+
+• ХОЗЯЕВА В ФОРМЕ + ГОСТИ В ПРОВАЛЕ:
+  → ФОРА П1 -1.0 или -1.5 (зависит от размера разрыва)
+  → 1-я тайм П1 (если хоз. часто открывают счёт)
+
+• АУТСАЙДЕР С ВАЛУЕМ:
+  → Не чистая П2 — слишком рискованно. Лучше Ф2 +1.0 или X2
+  → Или "не победит фаворит" (X2 / Ф2 +0.5)
+
+КРИТИЧНО: НЕ предлагай ставки, по которым нет кэфа в данных. Доступные:
+${match.oddsX ? '— П1 / X / П2 (есть все 3)' : '— П1 / П2'}
+${match.oddsO ? `— ТБ ${match.totLine||2.5} / ТМ ${match.totLine||2.5}` : '— Тоталы НЕ ДОСТУПНЫ для этого матча'}
+
+═══ АЛГОРИТМ АНАЛИЗА (8 ШАГОВ — ВЫПОЛНИ ПОСЛЕДОВАТЕЛЬНО) ═══
+
+ШАГ 1 — IMPLIED PROBABILITIES & MARGIN:
+• Рассчитай implied prob каждого исхода: 100/odds
+• Сумма implied = маржа БК. Норма 105-110% (5-10% маржа)
+• Если маржа >10% — линия "тяжёлая", value искать сложнее
+
+ШАГ 2 — БАЗОВЫЕ ВЕРОЯТНОСТИ (no-vig):
+• Убери маржу: real_prob_исход = implied_исход / sum_всех_implied
+• Это "честная" линия БК без маржи
+
+ШАГ 3 — АНАЛИЗ ФОРМЫ:
+• Последние 5 матчей каждой команды
+• Очки набранные/потерянные, голевая активность, дома vs в гостях ОТДЕЛЬНО
+• Тренд: восходящий/нисходящий/стабильный
+• Качество соперников по форме (играли с топами или с аутсайдерами?)
+
+ШАГ 4 — H2H ИСТОРИЯ:
+• Последние 5-10 личных встреч
+• Доминирование одной команды? Стиль матчей (низовые/верховые)?
+• Текущие составы vs исторические — релевантна ли эта статистика?
+
+ШАГ 5 — ТАБЛИЦА И МОТИВАЦИЯ:
+• Положение в таблице — что на кону?
+• Гонка за титул / еврокубки / выживание = +мотивация
+• Середина таблицы без задач в конце сезона = -мотивация
+• "Ловушка фаворита": матч между двумя играми кубка = ротация состава
+
+ШАГ 6 — КОНТЕКСТ И ВНЕШНИЕ ФАКТОРЫ:
+• Травмы/дисквалификации ключевых = пересчёт силы команды (-10-25%)
+• Усталость: back-to-back, перелёты, плотный календарь
+• Погода (футбол/теннис на улице): ветер/дождь/жара меняют тоталы и стиль
+• Психология: реванш, дерби, последний шанс
+• Тренерская смена за 1-3 матча = непредсказуемость
+
+ШАГ 7 — ТВОЯ ОЦЕНКА (ключевой шаг):
+• Дай свою вероятность исхода в %, основываясь на ШАГАХ 3-6
+• Сравни с no-vig probability из ШАГА 2
+• РАЗНИЦА = твой EDGE (преимущество перед линией)
+• EDGE = real_prob - implied_prob (берём с маржой для итогового value)
+• value_score 1-10: 1-3 (нет value), 4-6 (small edge), 7-10 (sharp value)
+
+ШАГ 8 — KELLY CRITERION (размер ставки):
+• kelly_fraction = (real_prob × odds - 1) / (odds - 1)
+• stake_pct = kelly_fraction × 100 × 0.25 (используем 1/4 Kelly для управления риском)
+• Округли в диапазон 1-4%. Если kelly < 0 — НЕ СТАВИМ (нет value)
+
+═══ КОНТР-ФАКТОРЫ (ОБЯЗАТЕЛЬНО ПРОВЕРЬ) ═══
+Перед финальным решением подумай — ПОЧЕМУ ставка может НЕ ЗАЙТИ:
+• Что я НЕ знаю? Какая информация может быть у "умных денег" а у меня нет?
+• Что говорит движение линии? Если кэф упал на 0.1+ за сутки = sharp money уже зашёл
+• Есть ли recency bias? Не переоцениваю ли я последний результат?
+• Базовые вероятности класса: фаворит дома в топ-лиге = ~52-55% побед — не больше
+
+═══ КОГДА НЕ СТАВИТЬ (signal: false) ═══
+• value_score < 4 (нет преимущества над линией)
+• Ключевые данные отсутствуют (форма, новости) — слепая ставка
+• Команды примерно равны без явных факторов
+• Confidence < ${gC()}%
+• EDGE < 5% (тонкий value не оправдывает variance)
+• Линия двигалась против твоей идеи > 10% — рынок видит то, что ты не видишь
+
+═══ 🚨 ЛОВУШКИ ДЛЯ КАППЕРА (RED FLAGS) ═══
+Эти ситуации ВЫГЛЯДЯТ как value, но в долгосроке убивают банкролл:
+1. РАВНЫЕ КЭФЫ (1.85-2.10 на обе команды) — БК сами не уверены, нет edge
+2. ОЧЕВИДНЫЕ ФАВОРИТЫ (кэф < 1.40) — низкий потенциал, высокий риск апсета
+3. КЭФ ХУЖЕ NO-VIG: если кэф БК < no-vig probability — ты переплачиваешь маржу без edge
+4. РОТАЦИЯ СОСТАВА: фаворит между важными матчами = риск экономии сил
+5. ВАЖНЫЙ МАТЧ + АУТСАЙДЕР В ХОРОШЕЙ ФОРМЕ = классическая ловушка для фаворита
+6. EARLY GAME OF SEASON: первые 3-5 туров = много дисперсии, форма неустойчива
+7. РЕВАНШ ПОСЛЕ КРУПНОГО ПОРАЖЕНИЯ: команда часто перенастраивается
+8. КЭФ "ТРЕЛЬЯЖНЫЙ" (1.85): часто индикатор того, что БК сам не видит фаворита
+9. ЛИНИЯ НЕ ДВИГАЛАСЬ ПОСЛЕ НОВОСТИ О ТРАВМЕ — возможно слух или малый импакт
+10. БИТЫ КОРРЕЛИРУЮЩИЕ С ОЧЕВИДНОЙ ИДЕЕЙ (фаворит П1 + ТБ) — БК уже учли это в обоих кэфах
+
+═══ ФОРМАТ ОТВЕТА (СТРОГО JSON, БЕЗ КОММЕНТАРИЕВ) ═══
+{
+  "signal": true|false,
+  "bet": "Точная формулировка ставки (например: 'Тотал больше 2.5', 'П1', 'Фора1 -1.5', 'ОЗ Да')",
+  "bet_type": "total_under|total_over|win_home|win_away|draw|handicap_home|handicap_away|btts_yes|btts_no|double_chance",
+  "odds": число (точный кэф из данных),
+  "confidence": 0-100 (твоя итоговая уверенность),
+  "stake_pct": 1-4 (размер по Kelly/4),
+  "risk": "low|medium|high",
+  "value_score": 1-10,
+  "implied_prob": число (100/odds),
+  "no_vig_prob": число (после удаления маржи),
+  "real_prob": число (твоя оценка),
+  "edge_pct": число (real_prob - implied_prob),
+  "kelly_pct": число (полный Kelly без коррекции),
+  "reasoning": [
+    "ФОРМА: конкретные цифры за 5 матчей с трендом",
+    "H2H: что показывает история встреч",
+    "СТАТЫ: ключевые показатели (xG/PP%/sv%/etc)",
+    "VALUE: implied X% vs твоя Y% = edge Z%. Кэф ${match.odds1} занижен/завышен потому что...",
+    "КОНТР-АРГУМЕНТ: почему ставка может проиграть и почему это всё равно +EV"
+  ],
+  "key_factor": "ОДИН главный фактор-триггер для этой ставки (1 предложение)",
+  "weather_impact": "нет|описание влияния",
+  "line_movement": "stable|sharp_in_favor|sharp_against|unknown",
+  "sources_used": ["перечень фактически использованных данных"],
+  "skip_reason": "если signal:false — конкретная причина пропуска"
+}
+
+ВАЖНО: лучше дать signal:false с честным объяснением, чем плохой сигнал. Профессионал ИГНОРИРУЕТ 80% матчей.`;
+
+  setChip('groq','load','GROQ AI');
+  try{
+    const resp=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        temperature:0.15,
+        max_tokens:2000,
+        top_p:0.9,
+        messages:[{role:'system',content:sys},{role:'user',content:usr}],
+      }),
+      signal:AbortSignal.timeout(25000),
+    });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const d=await resp.json();
+    let txt=d.choices?.[0]?.message?.content?.trim()||'';
+    txt=txt.replace(/```json|```/g,'').trim();
+    const jm=txt.match(/\{[\s\S]*\}/);
+    if(!jm) throw new Error('No JSON');
+    const r=JSON.parse(jm[0]);
+
+    // ── ПОСТ-ВАЛИДАЦИЯ И ПРОВЕРКА KELLY ──
+    if (r.signal && r.real_prob && r.odds) {
+      const kellyFull = ((r.real_prob/100) * r.odds - 1) / (r.odds - 1);
+      const kellyQuarter = Math.max(0, kellyFull * 0.25 * 100);
+      // Если AI забыл рассчитать или ошибся — пересчитываем
+      if (!r.kelly_pct || Math.abs(r.kelly_pct - kellyFull*100) > 5) {
+        r.kelly_pct = +(kellyFull*100).toFixed(2);
+      }
+      // Корректируем stake по 1/4 Kelly если AI ошибся
+      if (kellyFull <= 0) {
+        // Negative Kelly = no value, но AI всё равно сигналит — снижаем confidence
+        r.stake_pct = 1;
+        addLog('warn', `⚠️ Kelly<0 для ${match.team1}—${match.team2}, но AI дал signal. stake=1%`);
+      } else {
+        r.stake_pct = Math.max(1, Math.min(4, Math.round(kellyQuarter)));
+      }
+      // Рассчитываем edge если AI не дал
+      if (!r.edge_pct && r.implied_prob && r.real_prob) {
+        r.edge_pct = +(r.real_prob - r.implied_prob).toFixed(2);
+      }
+    }
+
+    setChip('groq','ok','GROQ AI');rmProg(prog);
+    if(r.signal&&r.confidence>=gC()){
+      createSigCard(match,r);
+      const edgeStr = r.edge_pct ? ` | EDGE +${r.edge_pct}%` : '';
+      addLog('sig',`✅ СИГНАЛ: ${match.team1}—${match.team2} | ${r.bet} @ ${r.odds} [${r.confidence}%${edgeStr}]`);
+      pushN(`🎯 ${match.team1} — ${match.team2}`,`✅ ${r.bet} @ ${r.odds}\n${r.confidence}% · value ${r.value_score}/10${r.edge_pct?' · EDGE +'+r.edge_pct+'%':''}\n📊 Kelly: ${r.stake_pct}% от банка`,'sig_'+match.id);
+    } else {
+      addLog('warn',`◌ Пропуск ${match.team1}—${match.team2}: ${r.skip_reason||'conf '+r.confidence+'%<'+gC()+'%'}`);
+    }
+  }catch(e){
+    setChip('groq','err','GROQ AI');rmProg(prog);
+    addLog('err',`❌ Groq: ${e.message}`);
+    // Снимаем блокировку при ошибке чтобы можно было попробовать в следующем скане
+    sigKeys.delete(sigKey);
+    sigIds.delete(match.id);
+  }
+}
+// ══════════════════════════════════════════════════
+// EXPRESS CHECK
+// ══════════════════════════════════════════════════
+async function checkExpress() {
+  const upcoming = matches.filter(m => {
+    const cd = getCD(m.time);
+    return cd.mins > 0 && cd.mins <= gP() + 5 && !sigKeys.has(getSigKey(m));
+  });
+  if (upcoming.length < 2) return;
+  const key = gG();
+  if (!key) return;
+  const minC = gS() === 'aggressive' ? 62 : 72;
+  addLog('sig', `🎰 Проверяю экспресс из ${upcoming.length} матчей...`);
+
+  const summaries = upcoming.slice(0, 3).map(m => {
+    const wx = getWx(m);
+    const news = newsStore.filter(n => {
+      const t = (m.team1 + ' ' + m.team2).toLowerCase();
+      return n.title.toLowerCase().split(/\s+/).some(w => w.length > 3 && t.includes(w));
+    }).slice(0, 2).map(n => n.title).join('; ') || '—';
+    return `${m.team1} vs ${m.team2} (${m.league}, ${m.sport}): П1=${m.odds1} П2=${m.odds2}${m.oddsX ? ' X=' + m.oddsX : ''}${m.oddsO ? ' ТБ=' + m.oddsO : ''}${m.oddsU ? ' ТМ=' + m.oddsU : ''} | Новости: ${news} | Погода: ${wx ? wx.temp + '°C ' + wx.desc : 'нет'}`;
+  }).join('\n');
+
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${key}`},
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.2,
+        max_tokens: 800,
+        messages: [{
+          role: 'system',
+          content: `Ты ALMANAC — профессиональный каппер. Анализируй матчи и решай: можно ли собрать ВЫГОДНЫЙ экспресс.
+
+ПРАВИЛА ПРОФЕССИОНАЛЬНОГО ЭКСПРЕССА:
+1. КАЖДОЕ плечо должно иметь самостоятельный edge ≥4% и confidence ≥${minC}%
+2. НЕ КОРРЕЛИРУЮЩИЕ события: не бери "П1+ТБ" если фаворит — это связанные исходы. Бери из РАЗНЫХ матчей/спортов
+3. МАКС 3-4 плеча. Каждое плечо снижает итоговую вероятность мультипликативно
+4. Итоговый кэф ${gS() === 'aggressive' ? '4.00-14.00' : '3.00-8.00'} — оптимальная зона value
+5. Реальная вероятность = произведение реальных вероятностей плеч
+6. Implied = 1/total_odds. Если real > implied на ≥3% → есть value в экспрессе
+7. Стейк МАКСИМУМ 1-2% от банка (экспрессы = высокий variance)
+
+ИЗБЕГАЙ:
+- Слишком явных фаворитов (плечи 1.20-1.40) — нет value
+- Слишком рискованных плеч (>3.50) если нет sharp value
+- Подключения матчей без полноценных данных
+
+Если value сомнительное — лучше отказаться (express:false).
+
+ФОРМАТ JSON:
+{"express":true|false,"legs":[{"match":"team1 vs team2","bet":"...","bet_type":"...","odds":число,"confidence":число,"edge":число}],"total_odds":число,"total_confidence":число,"total_real_prob":число,"total_implied_prob":число,"total_edge":число,"stake_pct":1-2,"reasoning":"конкретный анализ value экспресса","key_factor":"главная идея сборки","skip_reason":"если express:false — причина"}`,
+        }, {
+          role: 'user',
+          content: `Доступные матчи (стиль: ${gS()}, мин conf плеча: ${minC}%):\n\n${summaries}\n\nПроанализируй и собери экспресс ТОЛЬКО если есть реальный value. Лучше отказаться чем дать слабый сигнал.`,
+        }],
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!resp.ok) return;
+    const d = await resp.json();
+    let txt = d.choices?.[0]?.message?.content?.trim() || '';
+    txt = txt.replace(/```json|```/g, '').trim();
+    const jm = txt.match(/\{[\s\S]*\}/);
+    if (!jm) return;
+    const res = JSON.parse(jm[0]);
+    if (res.express && res.legs?.length >= 2 && res.total_confidence >= minC) {
+      createExprCard(res, upcoming.slice(0, 3));
+      upcoming.slice(0, 3).forEach(m => {
+        sigIds.add(m.id);
+        sigKeys.add(getSigKey(m));
+        saveSigKey(getSigKey(m));
+      });
+      addLog('sig', `✅ ЭКСПРЕСС x${res.legs.length} @ ${res.total_odds} [${res.total_confidence}%]`);
+      pushN(`🎰 ЭКСПРЕСС x${res.legs.length}`, `Кэф ${res.total_odds} · ${res.total_confidence}%`, 'expr');
+    } else {
+      addLog('warn', 'Экспресс: недостаточно уверенности для сборки');
+    }
+  } catch(e) {
+    addLog('warn', 'Экспресс ошибка: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════════════
+// SIGNAL CARD RENDERING
+// ══════════════════════════════════════════════════
+function createSigCard(match, r) {
+  signals.unshift({match, r, time: new Date()});
+  allOdds.push(r.odds);
+  allConfs.push(r.confidence);
+  addResultEntry(match, r);
+  updWinStats();
+
+  const cc = r.confidence >= 80 ? 'h' : r.confidence >= 70 ? 'm' : 'l';
+  const cd = getCD(match.time);
+  const tc = cd.mins <= 5 ? 'tt-n' : cd.mins <= gP() + 5 ? 'tt-s' : 'tt-o';
+  const wx = getWx(match);
+  const idx = signals.length - 1;
+
+  const card = document.createElement('div');
+  card.className = 'sc fresh';
+  setTimeout(() => card.classList.remove('fresh'), 4000);
+
+  const srcs = (r.sources_used || ['Groq AI']).map(s => `<span class="su">${s}</span>`).join('');
+  const probRow = (r.implied_prob && r.real_prob) ? `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;font-family:'Share Tech Mono',monospace;font-size:9px;flex-wrap:wrap;">
+      <span style="color:var(--t3)">IMPLIED</span>
+      <span style="color:var(--t2)">${r.implied_prob}%</span>
+      ${r.no_vig_prob?`<span style="color:var(--t3)">·NO-VIG</span><span style="color:var(--blue)">${r.no_vig_prob}%</span>`:''}
+      <span style="color:var(--t3)">→РЕАЛ.</span>
+      <span style="font-weight:700;color:${r.real_prob > r.implied_prob ? 'var(--green)' : 'var(--red)'}">${r.real_prob}%</span>
+      ${r.edge_pct && r.edge_pct > 0 ? `<span style="color:var(--green);font-size:9px;font-weight:700;">▲ EDGE +${r.edge_pct}%</span>` : ''}
+    </div>` : '';
+
+  const kellyRow = r.kelly_pct ? `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;font-family:'Share Tech Mono',monospace;font-size:9px;">
+      <span style="color:var(--t3)">KELLY (full)</span>
+      <span style="color:${r.kelly_pct > 0 ? 'var(--green)' : 'var(--red)'};font-weight:700;">${r.kelly_pct > 0 ? '+' : ''}${r.kelly_pct}%</span>
+      <span style="color:var(--t3)">·ИСПОЛЬЗУЕМ ¼ KELLY:</span>
+      <span style="color:var(--gold);font-weight:700;">${r.stake_pct}%</span>
+    </div>` : '';
+
+  const lineMovBadge = r.line_movement ? (() => {
+    const m = {
+      'sharp_in_favor': {t: '📈 SHARP MONEY ЗА', c: 'var(--green)'},
+      'sharp_against': {t: '📉 SHARP MONEY ПРОТИВ', c: 'var(--red)'},
+      'stable': {t: '─ ЛИНИЯ СТАБИЛЬНА', c: 'var(--t2)'},
+      'unknown': null
+    }[r.line_movement];
+    return m ? `<div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:${m.c};margin-bottom:5px;">${m.t}</div>` : '';
+  })() : '';
+
+  card.innerHTML = `
+    <div class="sc-head">
+      <span class="sp-tag">${EMO[match.sport]||'🏆'} ${match.sport}</span>
+      <span class="lg-tag">${match.league}</span>
+      <span class="tm-tag ${tc}">${cd.mins > 0 ? '~' + cd.text : 'СЕЙЧАС'}</span>
+    </div>
+    <div class="sc-body">
+      <div class="sc-match">${match.team1} — ${match.team2}</div>
+      <div class="sc-time">📅 ${mskTime(match.time)} МСК · ${mskDate(match.time)}</div>
+      <div class="bet-box">
+        <div class="bet-txt">
+          <div class="bet-name">✅ ${r.bet}</div>
+          <div class="bet-info">📊 ${r.stake_pct}% от банка · BetBoom</div>
+        </div>
+        <div class="bet-odds">${r.odds}</div>
+      </div>
+      <div class="conf-row">
+        <span class="conf-lbl">УВЕРЕННОСТЬ</span>
+        <div class="conf-track"><div class="cbar cb-${cc}" style="width:${r.confidence}%"></div></div>
+        <span class="conf-n cn-${cc}">${r.confidence}%</span>
+      </div>
+      ${r.value_score ? `<div class="val-row"><span class="vl">VALUE</span><div class="vtrack"><div class="vfill" style="width:${r.value_score*10}%"></div></div><span class="vn">${r.value_score}/10</span></div>` : ''}
+      ${probRow}
+      ${kellyRow}
+      ${lineMovBadge}
+      ${wx ? `<div class="wx-box"><div class="wx-ico">${wxIcon(wx.code)}</div><div class="wx-info"><div class="wx-city">${match._wx||'МОСКВА'} · ${wx.temp}°C · ветер ${wx.wind}км/ч</div><div class="wx-desc">${wx.desc}</div></div></div>` : ''}
+      <div class="src-used">${srcs}</div>
+      <div class="reasons">${r.reasoning.map(x => `<div class="reason"><span class="rdot">◆</span><span>${x}</span></div>`).join('')}</div>
+      ${r.key_factor ? `<div class="kf">💡 ${r.key_factor}</div>` : ''}
+      ${r.weather_impact && r.weather_impact !== 'нет' ? `<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--blue);margin-bottom:7px;">🌦 ${r.weather_impact}</div>` : ''}
+    </div>
+    <div class="sc-foot">
+      <span class="risk-tag rt-${r.risk}">${r.risk === 'low' ? '🟢 НИЗ.РИСК' : r.risk === 'medium' ? '🟡 СРЕДНИЙ' : '🔴 ВЫС.РИСК'}</span>
+      <button class="copy-btn" onclick="copySig(${idx})">📋 КОПИРОВАТЬ</button>
+    </div>
+    <div class="disc">⚠️ Только для личного ознакомления. BetBoom 18+. Ставьте ответственно.</div>`;
+
+  const feed = document.getElementById('sigFeed');
+  feed.insertBefore(card, feed.firstChild);
+  document.getElementById('emptyEl').style.display = 'none';
+  newCnt++;
+  const badge = document.getElementById('newBadge');
+  badge.textContent = newCnt;
+  badge.style.display = 'flex';
+}
+
+function createExprCard(res, matchList) {
+  const idx = signals.length;
+  signals.unshift({
+    match: {team1: 'ЭКСПРЕСС', team2: '', league: 'Мульти', sport: 'Мульти'},
+    r: {bet: 'Экспресс x' + res.legs.length, odds: res.total_odds, confidence: res.total_confidence, stake_pct: res.stake_pct, risk: 'medium', value_score: 7, reasoning: [res.reasoning || ''], key_factor: res.key_factor || '', sources_used: ['Groq AI'], bet_type: 'express'},
+    time: new Date(), isExpress: true, legs: res.legs,
+  });
+  allOdds.push(res.total_odds);
+  allConfs.push(res.total_confidence);
+
+  const cc = res.total_confidence >= 80 ? 'h' : res.total_confidence >= 70 ? 'm' : 'l';
+  const card = document.createElement('div');
+  card.className = 'sc expr fresh';
+  setTimeout(() => card.classList.remove('fresh'), 4000);
+
+  const legsHtml = res.legs.map(l => `
+    <div class="leg">
+      <div class="leg-m">${l.match}</div>
+      <div class="leg-b">${l.bet}</div>
+      <div class="leg-o">${l.odds}</div>
+    </div>`).join('');
+
+  card.innerHTML = `
+    <div class="sc-head">
+      <span class="sp-tag" style="background:rgba(41,182,246,.12);color:var(--blue);">🎰 ЭКСПРЕСС</span>
+      <span class="lg-tag">${res.legs.length} события</span>
+      <span class="tm-tag tt-s">МУЛЬТИ</span>
+    </div>
+    <div class="expr-hdr">
+      <span class="expr-title">⚡ ЭКСПРЕСС x${res.legs.length}</span>
+      <span class="expr-odds">КЭФ ${res.total_odds}</span>
+    </div>
+    <div class="sc-body">
+      <div class="legs-box">${legsHtml}</div>
+      <div class="bet-box" style="border-color:rgba(41,182,246,.25);">
+        <div class="bet-txt">
+          <div class="bet-name">✅ Экспресс из ${res.legs.length} событий</div>
+          <div class="bet-info">📊 ${res.stake_pct}% от банка · BetBoom</div>
+        </div>
+        <div class="bet-odds" style="color:var(--blue)">${res.total_odds}</div>
+      </div>
+      <div class="conf-row">
+        <span class="conf-lbl">УВЕРЕННОСТЬ</span>
+        <div class="conf-track"><div class="cbar cb-${cc}" style="width:${res.total_confidence}%"></div></div>
+        <span class="conf-n cn-${cc}">${res.total_confidence}%</span>
+      </div>
+      <div class="kf">💡 ${res.key_factor || res.reasoning}</div>
+    </div>
+    <div class="sc-foot">
+      <span class="risk-tag rt-m">🟡 ЭКСПРЕСС</span>
+      <button class="copy-btn" onclick="copyExpr(${idx})">📋 КОПИРОВАТЬ</button>
+    </div>
+    <div class="disc">⚠️ BetBoom 18+. Ставьте ответственно.</div>`;
+
+  const feed = document.getElementById('sigFeed');
+  feed.insertBefore(card, feed.firstChild);
+  document.getElementById('emptyEl').style.display = 'none';
+  newCnt++;
+  const badge = document.getElementById('newBadge');
+  badge.textContent = newCnt;
+  badge.style.display = 'flex';
+}
+
+// ══════════════════════════════════════════════════
+// COPY FUNCTIONS
+// ══════════════════════════════════════════════════
+function copySig(idx) {
+  const {match, r} = signals[idx];
+  const wx = getWx(match);
+  const edgeStr = r.edge_pct ? `\n📈 EDGE: +${r.edge_pct}% над линией` : '';
+  const probStr = (r.implied_prob && r.real_prob) ? `\n🔬 Implied ${r.implied_prob}% → Real ${r.real_prob}%${r.no_vig_prob?` (no-vig: ${r.no_vig_prob}%)`:''}` : '';
+  const kellyStr = r.kelly_pct ? `\n💎 Kelly Criterion: ${r.kelly_pct > 0 ? '+' : ''}${r.kelly_pct}% (используем ¼ → ${r.stake_pct}%)` : '';
+  const lineStr = r.line_movement && r.line_movement !== 'unknown' ? `\n📊 Линия: ${({sharp_in_favor:'sharp money ЗА ✓',sharp_against:'sharp money ПРОТИВ ⚠️',stable:'стабильна'})[r.line_movement]||'—'}` : '';
+
+  writeClip(`🎯 ALMANAC СИГНАЛ | ${EMO[match.sport]||'🏆'} ${match.sport} | ${match.league}
+
+⚔️ ${match.team1} — ${match.team2}
+📅 ${mskFull(match.time)} МСК
+
+═══ СТАВКА ═══
+✅ ${r.bet}
+💰 Кэф: ${r.odds} (BetBoom)
+🔒 Уверенность: ${r.confidence}%${r.value_score ? ' | Value: ' + r.value_score + '/10' : ''}${edgeStr}${probStr}${kellyStr}
+📊 Размер: ${r.stake_pct}% от банка${lineStr}
+⚡ Риск: ${r.risk === 'low' ? 'низкий 🟢' : r.risk === 'medium' ? 'средний 🟡' : 'высокий 🔴'}
+
+═══ ПРОФЕССИОНАЛЬНЫЙ АНАЛИЗ ═══
+${r.reasoning.map((x, i) => `${i+1}. ${x}`).join('\n')}
+
+💡 КЛЮЧЕВОЙ ФАКТОР:
+${r.key_factor || '—'}${wx ? '\n\n🌦 Погода (' + match._wx + '): ' + wx.temp + '°C, ' + wx.desc + ', ветер ' + wx.wind + 'км/ч' : ''}${r.weather_impact && r.weather_impact !== 'нет' ? '\n📍 Влияние погоды: ' + r.weather_impact : ''}
+
+═══ ИСТОЧНИКИ ═══
+${(r.sources_used || ['Groq AI']).join(' · ')}
+
+⚠️ Только для личного ознакомления. BetBoom 18+. Ставьте ответственно.
+🤖 ALMANAC AI Sports Analyst`);
+}
+
+function copyExpr(idx) {
+  const s = signals[idx];
+  const legs = s.legs || [];
+  writeClip(`🎰 ЭКСПРЕСС | BetBoom
+
+${legs.map((l, i) => `${i+1}. ${l.match}\n   ✅ ${l.bet} @ ${l.odds} (${l.confidence}%)`).join('\n\n')}
+
+💰 ИТОГОВЫЙ КЭФ: ${s.r.odds}
+🔒 Уверенность: ${s.r.confidence}%
+📊 Рекомендация: ${s.r.stake_pct}% от банка
+
+⚠️ Только для личного ознакомления. BetBoom 18+`);
+}
+
+function writeClip(txt) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).catch(() => fbCopy(txt));
+  } else {
+    fbCopy(txt);
+  }
+  showToast('✅ Скопировано!');
+}
+function fbCopy(txt) {
+  const e = document.createElement('textarea');
+  e.value = txt;
+  document.body.appendChild(e);
+  e.select();
+  document.execCommand('copy');
+  document.body.removeChild(e);
+}
+
+// ══════════════════════════════════════════════════
+// RESULT TRACKING
+// ══════════════════════════════════════════════════
+function saveResults() { localStorage.setItem('alm_results', JSON.stringify(results.slice(0, 100))); }
+
+function addResultEntry(match, r) {
+  const wx = getWx(match);
+  results.unshift({
+    id: Date.now(),
+    match: match.team1 + ' — ' + match.team2,
+    team1: match.team1, team2: match.team2,
+    league: match.league, sport: match.sport,
+    bet: r.bet, bet_type: r.bet_type || '',
+    odds: r.odds, confidence: r.confidence, stake_pct: r.stake_pct,
+    edge_pct: r.edge_pct || 0, value_score: r.value_score || 0,
+    real_prob: r.real_prob || 0, implied_prob: r.implied_prob || 0,
+    kelly_pct: r.kelly_pct || 0,
+    totLine: match.totLine || 2.5,
+    result: 'pending', autoChecked: false, finalScore: null,
+    time: new Date().toISOString(),
+    weather: wx ? `${wxIcon(wx.code)} ${wx.temp}°C ${wx.desc}` : '—',
+    city: match._wx || 'Москва',
+  });
+  saveResults();
+  renderHistory();
+}
+
+function setResult(id, res) {
+  const e = results.find(r => r.id === id);
+  if (!e) return;
+  e.result = res;
+  saveResults();
+  renderHistory();
+  updWinStats();
+  showToast(res === 'win' ? '✅ ЗАШЛО!' : '❌ Не зашло');
+}
+
+function updWinStats() {
+  const wins = results.filter(r => r.result === 'win').length;
+  const losses = results.filter(r => r.result === 'loss').length;
+  const pend = results.filter(r => r.result === 'pending').length;
+  const total = wins + losses;
+  const wr = total > 0 ? Math.round(wins / total * 100) : 0;
+
+  document.getElementById('sw-win').textContent = wins;
+  document.getElementById('sw-loss').textContent = losses;
+  document.getElementById('sw-pend').textContent = pend;
+
+  const wrEl = document.getElementById('sw-wr');
+  const wrFill = document.getElementById('sw-wrf');
+  if (total > 0) {
+    wrEl.textContent = wr + '%';
+    wrEl.style.color = wr >= 55 ? 'var(--green)' : wr >= 45 ? 'var(--gold)' : 'var(--red)';
+    wrFill.style.width = wr + '%';
+    wrFill.style.background = wr >= 55
+      ? 'linear-gradient(90deg,var(--green),#69f0ae)'
+      : wr >= 45
+        ? 'linear-gradient(90deg,var(--gold),var(--gold2))'
+        : 'linear-gradient(90deg,var(--red),#ff6090)';
+  } else {
+    wrEl.textContent = '—';
+  }
+
+  // ROI = (выигрыши - проигрыши) / число матчей × 100
+  if (total > 0) {
+    const wonO = results.filter(r => r.result === 'win').reduce((s, r) => s + (r.odds - 1) * r.stake_pct, 0);
+    const lostS = results.filter(r => r.result === 'loss').reduce((s, r) => s + r.stake_pct, 0);
+    const roi = Math.round((wonO - lostS) / total * 10) / 10;
+    const roiEl = document.getElementById('sw-roi');
+    roiEl.textContent = (roi >= 0 ? '+' : '') + roi + '%';
+    roiEl.style.color = roi >= 0 ? 'var(--green)' : 'var(--red)';
+
+    // YIELD = чистая прибыль / сумма всех стейков × 100 (профессиональная метрика)
+    const totalStake = results.filter(r => r.result !== 'pending').reduce((s, r) => s + r.stake_pct, 0);
+    const profit = wonO - lostS;
+    const yield_pct = totalStake > 0 ? +(profit / totalStake * 100).toFixed(1) : 0;
+    const yEl = document.getElementById('sw-yield');
+    if (yEl) {
+      yEl.textContent = (yield_pct >= 0 ? '+' : '') + yield_pct + '%';
+      yEl.style.color = yield_pct >= 5 ? 'var(--green)' : yield_pct >= 0 ? 'var(--gold)' : 'var(--red)';
+    }
+  }
+
+  // AVG EDGE - средний edge по сыгранным ставкам (показатель отбора матчей)
+  const settled = results.filter(r => r.result !== 'pending' && r.edge_pct);
+  const edgeEl = document.getElementById('sw-edge');
+  if (edgeEl) {
+    if (settled.length) {
+      const avgEdge = settled.reduce((s, r) => s + (r.edge_pct || 0), 0) / settled.length;
+      edgeEl.textContent = (avgEdge >= 0 ? '+' : '') + avgEdge.toFixed(1) + '%';
+      edgeEl.style.color = avgEdge >= 5 ? 'var(--green)' : avgEdge >= 2 ? 'var(--gold)' : 'var(--red)';
+    } else edgeEl.textContent = '—';
+  }
+
+  // СЕРИЯ - последовательность побед/поражений
+  const streakEl = document.getElementById('sw-streak');
+  if (streakEl) {
+    const settledOrdered = results.filter(r => r.result !== 'pending');
+    if (settledOrdered.length) {
+      let streak = 1;
+      const first = settledOrdered[0].result;
+      for (let i = 1; i < settledOrdered.length; i++) {
+        if (settledOrdered[i].result === first) streak++;
+        else break;
+      }
+      streakEl.textContent = streak + (first === 'win' ? 'В' : 'П');
+      streakEl.style.color = first === 'win' ? 'var(--green)' : 'var(--red)';
+    } else streakEl.textContent = '—';
+  }
+
+  const oa = results.map(r => r.odds);
+  if (oa.length) document.getElementById('sw-ao').textContent = (oa.reduce((a, b) => a + b, 0) / oa.length).toFixed(2);
+}
+
+function renderHistory() {
+  const feed = document.getElementById('rhFeed');
+  feed.innerHTML = '';
+  if (!results.length) {
+    feed.innerHTML = '<div style="padding:14px 12px;font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--t3);text-align:center;">Результаты появятся после первых сигналов.<br>🤖 Агент проверяет их автоматически!</div>';
+    return;
+  }
+  results.slice(0, 30).forEach(e => {
+    const div = document.createElement('div');
+    div.className = `rh ${e.result}`;
+    const rl = e.result === 'win' ? '✅ ЗАШЛО' : e.result === 'loss' ? '❌ НЕ ЗАШЛО' : '⏳ ОЖИДАЕТ';
+    const rc = e.result === 'win' ? 'rr-w' : e.result === 'loss' ? 'rr-l' : 'rr-p';
+    const dt = msk(new Date(e.time), {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+    const edgeBadge = e.edge_pct && e.edge_pct > 0 ? `<span class="rh-conf" style="color:var(--green);font-weight:700;">+${e.edge_pct.toFixed(1)}% EDGE</span>` : '';
+    div.innerHTML = `
+      <div class="rh-match">${EMO[e.sport]||'🏆'} ${e.match}</div>
+      <div class="rh-bet">✅ ${e.bet}</div>
+      <div class="rh-row">
+        <span class="rh-odds">@ ${e.odds}</span>
+        <span class="rh-conf">${e.confidence}%</span>
+        ${edgeBadge}
+        <span class="rh-conf">${e.league}</span>
+        <span class="rh-res ${rc}">${rl}</span>
+      </div>
+      <div class="rh-meta">🌡 ${e.weather} · ${e.city} · ${dt} МСК${e.finalScore ? ' · ⚽ ' + e.finalScore : ''}${e.autoChecked ? ' · 🤖 авто' : ''}</div>
+      ${e.result === 'pending' ? `
+      <div class="rh-btns">
+        <button class="rh-btn w" onclick="setResult(${e.id},'win')">✅ ЗАШЛО</button>
+        <button class="rh-btn l" onclick="setResult(${e.id},'loss')">❌ НЕ ЗАШЛО</button>
+      </div>` : ''}`;
+    feed.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════
+// ANALYSIS PROGRESS UI
+// ══════════════════════════════════════════════════
+const STEPS = [
+  '📡 The Odds API — кэфы BetBoom',
+  '🔢 Расчёт implied prob & no-vig',
+  '⚽ TheSportsDB — форма команд',
+  '🤝 H2H — личные встречи',
+  '📊 Турнирная таблица',
+  '🚨 Травмы и дисквалификации',
+  '📰 Sports.ru / Чемпионат / РИА',
+  '🌐 Reddit — настроения фанатов',
+  '🌦 wttr.in — погода города',
+  '🧠 Groq llama-3.3 — value-анализ',
+  '💎 Kelly Criterion — расчёт стейка',
+];
+
+function showProg(match) {
+  const div = document.createElement('div');
+  div.className = 'anl';
+  div.id = 'p_' + match.id;
+  div.innerHTML = `<div class="anl-title"><div class="spin"></div>ALMANAC анализирует: ${match.team1} — ${match.team2}</div>` +
+    STEPS.map((s, i) => `<div class="step" id="s_${match.id}_${i}"><span class="step-ic">○</span>${s}</div>`).join('');
+  document.getElementById('sigFeed').insertBefore(div, document.getElementById('sigFeed').firstChild);
+  document.getElementById('emptyEl').style.display = 'none';
+  STEPS.forEach((_, i) => setTimeout(() => {
+    const el = document.getElementById(`s_${match.id}_${i}`);
+    if (el) { el.classList.add('act'); el.querySelector('.step-ic').textContent = '▶'; }
+    if (i > 0) {
+      const prev = document.getElementById(`s_${match.id}_${i - 1}`);
+      if (prev) { prev.classList.remove('act'); prev.classList.add('done'); prev.querySelector('.step-ic').textContent = '✓'; }
+    }
+  }, i * 800));
+  return div;
+}
+function rmProg(el) { if (el?.parentNode) el.parentNode.removeChild(el); }
+
+// ══════════════════════════════════════════════════
+// SOURCE STATUS UI
+// ══════════════════════════════════════════════════
+const CHIPS = {
+  odds: 'BETBOOM ODDS',
+  fd: 'FOOTBALL-DATA',
+  sdb: 'SPORTSDB',
+  oliga: 'OPENLIGADB',
+  espn: 'ESPN API',
+  apisp: 'SDB DAY',
+  reddit: 'REDDIT',
+  rss: 'SPORTS.RU/РИА',
+  wttr: 'ПОГОДА',
+  groq: 'GROQ AI',
+};
+function setChip(id, state, label) {
+  const el = document.getElementById('cs-' + id);
+  if (!el) return;
+  el.className = `sch ${state}`;
+  el.textContent = (state === 'ok' ? '●' : state === 'err' ? '✕' : '○') + ' ' + (label || CHIPS[id]);
+}
+function setSrc(id, name, stat, state) { dsrc[id] = {name, stat, state}; }
+function renderSrcList() {
+  const list = document.getElementById('srcList');
+  list.innerHTML = '';
+  const all = [
+    {id:'odds', name:'The Odds API (BetBoom кэфы)', d:'17 видов спорта · 24ч кеш · 180 запросов/мес'},
+    {id:'fd', name:'football-data.org', d:'9 европейских лиг · с ключом ∞'},
+    {id:'sdb', name:'TheSportsDB (35+ лиг)', d:'все виды спорта · 7 дней · БЕСПЛАТНО ∞'},
+    {id:'oliga', name:'OpenLigaDB', d:'Бундеслига + результаты · БЕСПЛАТНО ∞'},
+    {id:'espn', name:'ESPN API', d:'NFL/NBA/NHL/MLS/UFC/MLB · БЕСПЛАТНО ∞'},
+    {id:'apisp', name:'SDB Day Events', d:'Все спорты на сегодня · БЕСПЛАТНО ∞'},
+    {id:'reddit', name:'Reddit ×10 сабреддитов', d:'Новости всех видов спорта · БЕСПЛАТНО ∞'},
+    {id:'rss', name:'Sports.ru · Чемпионат · СЭ · РИА', d:'🇷🇺 Российские СМИ · БЕСПЛАТНО'},
+    {id:'wttr', name:'Open-Meteo Weather', d:'Погода по городу матча · БЕСПЛАТНО ∞'},
+    {id:'groq', name:'Groq llama-3.3-70b AI', d:'Анализ и сигналы · БЕСПЛАТНО ∞'},
+  ];
+  all.forEach(src => {
+    const d = dsrc[src.id] || {};
+    const state = d.state || 'idle';
+    const dotCls = state === 'ok' ? 'd-ok' : state === 'err' ? 'd-err' : state === 'load' ? 'd-load' : 'd-idle';
+    const div = document.createElement('div');
+    div.className = 'i-item';
+    div.innerHTML = `<span class="i-dot ${dotCls}"></span><span class="i-name">${src.name}</span><span class="i-stat">${d.stat || src.d}</span>`;
+    list.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════
+// NEWS
+// ══════════════════════════════════════════════════
+function newsImpact(t) {
+  t = t.toLowerCase();
+  if (t.match(/травм|повреждени|дисквалиф|не сыграет|пропустит|выбыл|suspend|injur|absent|retire|операц/))
+    return 'high';
+  if (t.match(/состав|форм|тренер|coach|lineup|squad|трансфер|контракт/))
+    return 'med';
+  return 'low';
+}
+function renderNews() {
+  const feed = document.getElementById('newsFeed');
+  feed.innerHTML = '';
+  document.getElementById('ncnt').textContent = newsStore.length;
+  newsStore.slice(0, 25).forEach(n => {
+    const div = document.createElement('div');
+    div.className = 'ni';
+    const ic = n.impact === 'high' ? 'nih' : n.impact === 'med' ? 'nim' : 'nil';
+    div.innerHTML = `<div class="n-src">${n.source}<span class="n-imp ${ic}">${n.impact.toUpperCase()}</span></div><div class="n-title">${n.title}</div><div class="n-time">${mskTime(n.time)}</div>`;
+    feed.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════
+// LOG
+// ══════════════════════════════════════════════════
+function addLog(type, msg) {
+  const t = mskTime(new Date());
+  const feed = document.getElementById('logFeed');
+  const d = document.createElement('div');
+  d.className = 'll';
+  const cls = {ok:'l-ok', warn:'l-warn', sig:'l-sig', err:'l-err', src:'l-src', info:'', log:''}[type] || '';
+  d.innerHTML = `<span style="color:var(--t3)">[${t}]</span> <span class="${cls}">${msg}</span>`;
+  feed.insertBefore(d, feed.firstChild);
+  if (feed.children.length > 100) feed.removeChild(feed.lastChild);
+}
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+function sim(a, b) {
+  if (!a || !b) return false;
+  a = a.toLowerCase(); b = b.toLowerCase();
+  if (a === b) return true;
+  return a.split(/\s+/).some(w => w.length > 3 && b.includes(w)) ||
+         b.split(/\s+/).some(w => w.length > 3 && a.includes(w));
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+loadSets();
+Object.keys(CHIPS).forEach(id => setChip(id, 'idle', CHIPS[id]));
+renderSrcList();
+renderHistory();
+updWinStats();
+
+// Set default datetime (+33 min from now in local time)
+const dft = new Date(Date.now() + 33 * 60000);
+dft.setSeconds(0);
+document.getElementById('fdt').value = dft.toISOString().slice(0, 16);
+
+// Restore push notification button state
+if (Notification.permission === 'granted') {
+  document.getElementById('notifBtn').textContent = '✅ УВЕДОМЛЕНИЯ ВКЛЮЧЕНЫ';
+  document.getElementById('notifBtn').style.color = 'var(--green)';
+}
+</script>
+</body>
+</html>
